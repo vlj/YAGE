@@ -110,7 +110,9 @@ unsigned IrrDriver::UpdateLightsInfo(scene::ICameraSceneNode * const camnode, fl
 */
 void IrrDriver::uploadLightingData()
 {
-    float Lighting[36];
+    float Lighting[40];
+
+    // Sun
     Lighting[0] = m_sundirection.X;
     Lighting[1] = m_sundirection.Y;
     Lighting[2] = m_sundirection.Z;
@@ -119,12 +121,37 @@ void IrrDriver::uploadLightingData()
     Lighting[6] = m_suncolor.getBlue();
     Lighting[7] = 0.54f;
 
-    memcpy(&Lighting[8], blueSHCoeff, 9 * sizeof(float));
-    memcpy(&Lighting[17], greenSHCoeff, 9 * sizeof(float));
-    memcpy(&Lighting[26], redSHCoeff, 9 * sizeof(float));
+    // Fog
+    if (World::getWorld() && World::getWorld()->isFogEnabled())
+    {
+        const Track * const track = World::getWorld()->getTrack();
+
+        const float start = track->getFogStart();
+        const video::SColor tmpcol = track->getFogColor();
+
+        core::vector3df fogcol(tmpcol.getRed() / 255.0f,
+            tmpcol.getGreen() / 255.0f,
+            tmpcol.getBlue() / 255.0f);
+        Lighting[8] = fogcol.X;
+        Lighting[9] = fogcol.Y;
+        Lighting[10] = fogcol.Z;
+        Lighting[11] = 1.f / (40.f * start);
+    }
+    else
+    {
+        Lighting[8] = 0.;
+        Lighting[9] = 0.;
+        Lighting[10] = 0.;
+        Lighting[11] = 0.;
+    }
+
+    // Diffuse IBL SH
+    memcpy(&Lighting[12], blueSHCoeff, 9 * sizeof(float));
+    memcpy(&Lighting[21], greenSHCoeff, 9 * sizeof(float));
+    memcpy(&Lighting[30], redSHCoeff, 9 * sizeof(float));
 
     glBindBuffer(GL_UNIFORM_BUFFER, SharedObject::LightingDataUBO);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, 36 * sizeof(float), Lighting);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, 40 * sizeof(float), Lighting);
 }
 
 extern float shadowSplit[5];
@@ -198,11 +225,7 @@ void IrrDriver::renderLights(unsigned pointlightcount, bool hasShadow)
             else
             {
                 FullScreenShader::ShadowedSunLightShaderPCF::getInstance()->SetTextureUnits(irr_driver->getRenderTargetTexture(RTT_NORMAL_AND_DEPTH), irr_driver->getDepthStencilTexture(), m_rtts->getShadowFBO().getDepthTexture());
-                DrawFullScreenEffect<FullScreenShader::ShadowedSunLightShaderPCF>(shadowSplit[1],
-                                                                                  shadowSplit[2],
-                                                                                  shadowSplit[3],
-                                                                                  shadowSplit[4],
-                                                                                  float(UserConfigParams::m_shadows_resolution));
+                DrawFullScreenEffect<FullScreenShader::ShadowedSunLightShaderPCF>(shadowSplit[1], shadowSplit[2], shadowSplit[3], shadowSplit[4], UserConfigParams::m_shadows_resolution);
             }
         }
         else
@@ -228,16 +251,6 @@ void IrrDriver::renderSSAO()
 
 void IrrDriver::renderAmbientScatter()
 {
-    const Track * const track = World::getWorld()->getTrack();
-
-    // This function is only called once per frame - thus no need for setters.
-    float start = track->getFogStart() + .001f;
-    const video::SColor tmpcol = track->getFogColor();
-
-    core::vector3df col(tmpcol.getRed() / 255.0f,
-        tmpcol.getGreen() / 255.0f,
-        tmpcol.getBlue() / 255.0f);
-
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
     glEnable(GL_BLEND);
@@ -245,7 +258,7 @@ void IrrDriver::renderAmbientScatter()
     glBlendFunc(GL_ONE, GL_ONE);
 
     FullScreenShader::FogShader::getInstance()->SetTextureUnits(irr_driver->getDepthStencilTexture());
-    DrawFullScreenEffect<FullScreenShader::FogShader>(1.f / (40.f * start), col);
+    DrawFullScreenEffect<FullScreenShader::FogShader>();
 }
 
 void IrrDriver::renderLightsScatter(unsigned pointlightcount)
@@ -254,29 +267,19 @@ void IrrDriver::renderLightsScatter(unsigned pointlightcount)
     glClearColor(0., 0., 0., 0.);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    const Track * const track = World::getWorld()->getTrack();
-
-    // This function is only called once per frame - thus no need for setters.
-    float start = track->getFogStart() + .001f;
-    const video::SColor tmpcol = track->getFogColor();
-
-    core::vector3df col(tmpcol.getRed() / 255.0f,
-        tmpcol.getGreen() / 255.0f,
-        tmpcol.getBlue() / 255.0f);
-
+    glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
     glEnable(GL_BLEND);
     glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_ONE, GL_ONE);
 
     glEnable(GL_DEPTH_TEST);
-    core::vector3df col2(1., 1., 1.);
 
     glUseProgram(LightShader::PointLightScatterShader::getInstance()->Program);
     glBindVertexArray(LightShader::PointLightScatterShader::getInstance()->vao);
 
     LightShader::PointLightScatterShader::getInstance()->SetTextureUnits(irr_driver->getDepthStencilTexture());
-    LightShader::PointLightScatterShader::getInstance()->setUniforms(1.f / (40.f * start), col2);
+    LightShader::PointLightScatterShader::getInstance()->setUniforms();
 
     glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, MIN2(pointlightcount, MAXLIGHT));
 
