@@ -63,6 +63,12 @@ public:
     ObjectShader();
 };
 
+class SkinnedObjectShader : public ShaderHelperSingleton<SkinnedObjectShader, core::matrix4, core::matrix4, std::vector<core::matrix4> >, public TextureRead < Trilinear_Anisotropic_Filtered, Trilinear_Anisotropic_Filtered >
+{
+public:
+    SkinnedObjectShader();
+};
+
 class InstancedObjectShader : public ShaderHelperSingleton<InstancedObjectShader>, public TextureRead<Trilinear_Anisotropic_Filtered, Trilinear_Anisotropic_Filtered>
 {
 public:
@@ -73,6 +79,12 @@ class ObjectRefShader : public ShaderHelperSingleton<ObjectRefShader, core::matr
 {
 public:
     ObjectRefShader();
+};
+
+class SkinnedRefObjectShader : public ShaderHelperSingleton<SkinnedRefObjectShader, core::matrix4, core::matrix4, std::vector<core::matrix4> >, public TextureRead < Trilinear_Anisotropic_Filtered, Trilinear_Anisotropic_Filtered >
+{
+public:
+    SkinnedRefObjectShader();
 };
 
 class InstancedObjectRefShader : public ShaderHelperSingleton<InstancedObjectRefShader>, public TextureRead<Trilinear_Anisotropic_Filtered, Trilinear_Anisotropic_Filtered>
@@ -172,6 +184,12 @@ public:
     ShadowShader();
 };
 
+class SkinnedObjectShadowShader : public ShaderHelperSingleton<SkinnedObjectShadowShader, int, core::matrix4, std::vector<core::matrix4> >, public TextureRead <>
+{
+public:
+    SkinnedObjectShadowShader();
+};
+
 class RSMShader : public ShaderHelperSingleton<RSMShader, core::matrix4, core::matrix4, core::matrix4>, public TextureRead<Trilinear_Anisotropic_Filtered>
 {
 public:
@@ -201,6 +219,12 @@ class RefShadowShader : public ShaderHelperSingleton<RefShadowShader, int, core:
 {
 public:
     RefShadowShader();
+};
+
+class SkinnedRefObjectShadowShader : public ShaderHelperSingleton<SkinnedRefObjectShadowShader, int, core::matrix4, std::vector<core::matrix4> >, public TextureRead <Trilinear_Anisotropic_Filtered>
+{
+public:
+    SkinnedRefObjectShadowShader();
 };
 
 class InstancedRefShadowShader : public ShaderHelperSingleton<InstancedRefShadowShader, int>, public TextureRead<Trilinear_Anisotropic_Filtered>

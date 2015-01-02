@@ -119,6 +119,20 @@ class ListInstancedMatNormalMap : public InstancedMeshList<ListInstancedMatNorma
 class ListMatGrass : public MeshList<ListMatGrass, GLMesh *, core::matrix4, core::matrix4, core::vector3df>
 {};
 
+// ----------------------------------------Skinned--------------------------------------------------------//
+class STKAnimatedMesh;
+class ListSkinned : public Singleton<ListSkinned>
+{
+public:
+    std::vector<STKAnimatedMesh *> SolidPass, Shadows[4];
+    void clear()
+    {
+        SolidPass.clear();
+        for (unsigned i = 0; i < 4; i++)
+            Shadows[i].clear();
+    }
+};
+
 class ListInstancedMatGrass : public InstancedMeshList<ListInstancedMatGrass>
 {};
 

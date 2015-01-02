@@ -9,6 +9,7 @@
 #include <vector>
 #include <map>
 #include <unordered_map>
+#include <tuple>
 
 enum InstanceType
 {
@@ -160,12 +161,36 @@ struct GlowInstanceData
 #else
 } __attribute__((packed));
 #endif
+
+struct SkinnedVertexData
+{
+    int index0;
+    float weight0;
+    int index1;
+    float weight1;
+    int index2;
+    float weight2;
+    int index3;
+    float weight3;
+#ifdef WIN32
+};
+#else
+} __attribute__((packed));
+#endif
+
 #ifdef WIN32
 #pragma pack(pop)
 #endif
 
+template<typename VT>
+struct VertexAttribBinder
+{
+public:
+    static void bind();
+};
+
 // Array_buffer for vertex data or instances
-template<typename Data>
+template<typename Data, GLenum BufferType>
 class ArrayBuffer
 {
 private:
@@ -185,7 +210,7 @@ public:
             glDeleteBuffers(1, &buffer);
     }
 
-    void resizeBufferIfNecessary(size_t requestedSize, GLenum type)
+    void resizeBufferIfNecessary(size_t requestedSize)
     {
         if (requestedSize >= realSize)
         {
@@ -193,14 +218,14 @@ public:
                 realSize = 2 * realSize + 1;
             GLuint newVBO;
             glGenBuffers(1, &newVBO);
-            glBindBuffer(type, newVBO);
+            glBindBuffer(BufferType, newVBO);
             if (CVS->supportsAsyncInstanceUpload())
             {
-                glBufferStorage(type, realSize * sizeof(Data), 0, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT);
-                Pointer = static_cast<Data *>(glMapBufferRange(type, 0, realSize * sizeof(Data), GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT));
+                glBufferStorage(BufferType, realSize * sizeof(Data), 0, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT);
+                Pointer = static_cast<Data *>(glMapBufferRange(BufferType, 0, realSize * sizeof(Data), GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT));
             }
             else
-                glBufferData(type, realSize * sizeof(Data), 0, GL_DYNAMIC_DRAW);
+                glBufferData(BufferType, realSize * sizeof(Data), 0, GL_DYNAMIC_DRAW);
 
             if (buffer)
             {
@@ -226,28 +251,46 @@ public:
         return advertisedSize;
     }
 
-    GLuint getBuffer()
+    GLuint getBuffer(size_t id)
     {
+        assert(id == 0);
         return buffer;
+    }
+
+    void bindAttrib()
+    {
+        glBindBuffer(BufferType, buffer);
+        VertexAttribBinder<Data>::bind();
+    }
+
+    void append(size_t count, void *ptr)
+    {
+        size_t from = advertisedSize;
+        resizeBufferIfNecessary(from + count);
+        if (CVS->supportsAsyncInstanceUpload())
+        {
+            void *tmp = (char*)Pointer + from * sizeof(Data);
+            memcpy(tmp, ptr, count * sizeof(Data));
+        }
+        else
+        {
+            glBindBuffer(BufferType, buffer);
+            glBufferSubData(BufferType, from * sizeof(Data), count * sizeof(Data), ptr);
+        }
     }
 };
 
 template<typename Data>
-class InstanceBuffer : public Singleton<InstanceBuffer<Data> >, public ArrayBuffer <Data>
+class InstanceBuffer : public Singleton<InstanceBuffer<Data> >, public ArrayBuffer <Data, GL_ARRAY_BUFFER>
 {
 public:
-    InstanceBuffer() : ArrayBuffer<Data>()
+    InstanceBuffer() : ArrayBuffer<Data, GL_ARRAY_BUFFER>()
     {
-        ArrayBuffer<Data>::resizeBufferIfNecessary(10000, GL_ARRAY_BUFFER);
+        ArrayBuffer<Data, GL_ARRAY_BUFFER>::resizeBufferIfNecessary(10000);
     }
 };
 
-template<typename VT>
-struct VertexAttribBinder
-{
-public:
-    static void bind();
-};
+
 
 template<typename VT>
 struct InstanceAttribBinder
@@ -256,8 +299,58 @@ public:
     static void bind();
 };
 
+template <typename S3DVertexFormat, typename ...AppendedData>
+class FormattedVertexStorage : public std::tuple<ArrayBuffer<S3DVertexFormat, GL_ARRAY_BUFFER>, ArrayBuffer<AppendedData, GL_ARRAY_BUFFER>...>
+{
+private:
+    template<typename TupleType, int N>
+    struct BindAttrib_impl
+    {
+        static void exec(TupleType &tp)
+        {
+            const int Idx = std::tuple_size<TupleType>::value - N;
+            std::get<Idx>(tp).bindAttrib();
+            BindAttrib_impl<TupleType, N - 1>::exec(tp);
+        }
+    };
+    template<typename TupleType>
+    struct BindAttrib_impl<TupleType, 0>
+    {
+        static void exec(const TupleType &tp)
+        { }
+    };
 
+    typedef std::tuple<ArrayBuffer<S3DVertexFormat, GL_ARRAY_BUFFER>, ArrayBuffer<AppendedData, GL_ARRAY_BUFFER>...> BaseType;
 
+    template<int N>
+    void append_impl(size_t count)
+    {
+        static_assert(N == std::tuple_size<BaseType>::value, "Wrong count");
+    }
+
+    template<int N, typename ... VoidPtrType>
+    void append_impl(size_t count, void *ptr, VoidPtrType *...additionalData)
+    {
+        std::get<N>(*this).append(count, ptr);
+        append_impl<N + 1>(count, additionalData...);
+    }
+public:
+    size_t getSize() const
+    {
+        return std::get<0>(*this).getSize();
+    }
+
+    void bindAttrib()
+    {
+        BindAttrib_impl<BaseType, std::tuple_size<BaseType>::value>::exec(*this);
+    }
+
+    template<typename ... VoidPtrType>
+    void append(size_t count, void *ptr, VoidPtrType *...additionalData)
+    {
+        append_impl<0>(count, ptr, additionalData...);
+    }
+};
 
 static void SetVertexAttrib_impl(size_t s)
 {
@@ -349,40 +442,30 @@ public:
 };
 
 
-template<typename VT>
-class VertexArrayObject : public Singleton<VertexArrayObject<VT> >
+template<typename VBO>
+class VertexArrayObject : public Singleton<VertexArrayObject<VBO> >
 {
 private:
     GLuint vao;
     std::unordered_map<irr::scene::IMeshBuffer*, std::pair<GLuint, GLuint> > mappedBaseVertexBaseIndex;
 
-    void append(irr::scene::IMeshBuffer *mb)
+    template<typename... VertexAnnotation>
+    void append(irr::scene::IMeshBuffer *mb, VertexAnnotation *...SkinnedData)
     {
         size_t old_vtx_cnt = vbo.getSize();
-        vbo.resizeBufferIfNecessary(old_vtx_cnt + mb->getVertexCount(), GL_ARRAY_BUFFER);
+//        vbo.resizeBufferIfNecessary(old_vtx_cnt + mb->getVertexCount());
         size_t old_idx_cnt = ibo.getSize();
-        ibo.resizeBufferIfNecessary(old_idx_cnt + mb->getIndexCount(), GL_ELEMENT_ARRAY_BUFFER);
 
-        if (CVS->supportsAsyncInstanceUpload())
+//            glBindBuffer(GL_ARRAY_BUFFER, vbo.getBuffer(0));
+//            glBufferSubData(GL_ARRAY_BUFFER, old_vtx_cnt * VBO::getSizeOfData(), mb->getVertexCount() * VBO::getSizeOfData(), mb->getVertices());
+        vbo.append(mb->getVertexCount(), mb->getVertices(), SkinnedData...);
+        ibo.append(mb->getIndexCount(), mb->getIndices());
+
+/*        if (SkinnedData)
         {
-            void *tmp = (char*)vbo.getPointer() + old_vtx_cnt * sizeof(VT);
-            memcpy(tmp, mb->getVertices(), mb->getVertexCount() * sizeof(VT));
-        }
-        else
-        {
-            glBindBuffer(GL_ARRAY_BUFFER, vbo.getBuffer());
-            glBufferSubData(GL_ARRAY_BUFFER, old_vtx_cnt * sizeof(VT), mb->getVertexCount() * sizeof(VT), mb->getVertices());
-        }
-        if (CVS->supportsAsyncInstanceUpload())
-        {
-            void *tmp = (char*)ibo.getPointer() + old_idx_cnt * sizeof(irr::u16);
-            memcpy(tmp, mb->getIndices(), mb->getIndexCount() * sizeof(irr::u16));
-        }
-        else
-        {
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo.getBuffer());
-            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, old_idx_cnt * sizeof(irr::u16), mb->getIndexCount() * sizeof(irr::u16), mb->getIndices());
-        }
+            glBindBuffer(GL_ARRAY_BUFFER, vbo.getBuffer(1));
+            glBufferSubData(GL_ARRAY_BUFFER, old_vtx_cnt * 4 * 2 * sizeof(float), mb->getVertexCount() * 4 * 2 * sizeof(float), SkinnedData);
+        }*/
 
         mappedBaseVertexBaseIndex[mb] = std::make_pair(old_vtx_cnt, old_idx_cnt * sizeof(irr::u16));
     }
@@ -397,28 +480,28 @@ private:
     void regenerateInstanceVao()
     {
         glDeleteVertexArrays(1, &vao_instanceDualTex);
-        vao_instanceDualTex = VertexArrayObject<VT>::getInstance()->getNewVAO();
-        glBindBuffer(GL_ARRAY_BUFFER, InstanceBuffer<InstanceDataDualTex>::getInstance()->getBuffer());
+        vao_instanceDualTex = getNewVAO();
+        glBindBuffer(GL_ARRAY_BUFFER, InstanceBuffer<InstanceDataDualTex>::getInstance()->getBuffer(0));
         InstanceAttribBinder<InstanceDataDualTex>::SetVertexAttrib();
 
         glDeleteVertexArrays(1, &vao_instanceThreeTex);
-        vao_instanceThreeTex = VertexArrayObject<VT>::getInstance()->getNewVAO();
-        glBindBuffer(GL_ARRAY_BUFFER, InstanceBuffer<InstanceDataThreeTex>::getInstance()->getBuffer());
+        vao_instanceThreeTex = getNewVAO();
+        glBindBuffer(GL_ARRAY_BUFFER, InstanceBuffer<InstanceDataThreeTex>::getInstance()->getBuffer(0));
         InstanceAttribBinder<InstanceDataThreeTex>::SetVertexAttrib();
 
         glDeleteVertexArrays(1, &vao_instanceShadow);
-        vao_instanceShadow = VertexArrayObject<VT>::getInstance()->getNewVAO();
-        glBindBuffer(GL_ARRAY_BUFFER, InstanceBuffer<InstanceDataShadow>::getInstance()->getBuffer());
+        vao_instanceShadow = getNewVAO();
+        glBindBuffer(GL_ARRAY_BUFFER, InstanceBuffer<InstanceDataShadow>::getInstance()->getBuffer(0));
         InstanceAttribBinder<InstanceDataShadow>::SetVertexAttrib();
 
         glDeleteVertexArrays(1, &vao_instanceRSM);
-        vao_instanceRSM = VertexArrayObject<VT>::getInstance()->getNewVAO();
-        glBindBuffer(GL_ARRAY_BUFFER, InstanceBuffer<InstanceDataRSM>::getInstance()->getBuffer());
+        vao_instanceRSM = getNewVAO();
+        glBindBuffer(GL_ARRAY_BUFFER, InstanceBuffer<InstanceDataRSM>::getInstance()->getBuffer(0));
         InstanceAttribBinder<InstanceDataRSM>::SetVertexAttrib();
 
         glDeleteVertexArrays(1, &vao_instanceGlowData);
-        vao_instanceGlowData = VertexArrayObject<VT>::getInstance()->getNewVAO();
-        glBindBuffer(GL_ARRAY_BUFFER, InstanceBuffer<GlowInstanceData>::getInstance()->getBuffer());
+        vao_instanceGlowData = getNewVAO();
+        glBindBuffer(GL_ARRAY_BUFFER, InstanceBuffer<GlowInstanceData>::getInstance()->getBuffer(0));
         InstanceAttribBinder<GlowInstanceData>::SetVertexAttrib();
 
         glBindVertexArray(0);
@@ -426,8 +509,8 @@ private:
 public:
     GLuint vao_instanceDualTex, vao_instanceThreeTex, vao_instanceShadow, vao_instanceRSM, vao_instanceGlowData;
 
-    ArrayBuffer<VT> vbo;
-    ArrayBuffer<irr::u16> ibo;
+    VBO vbo;
+    ArrayBuffer<irr::u16, GL_ELEMENT_ARRAY_BUFFER> ibo;
 
     VertexArrayObject()
     {
@@ -454,17 +537,17 @@ public:
         GLuint newvao;
         glGenVertexArrays(1, &newvao);
         glBindVertexArray(newvao);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo.getBuffer());
-        VertexAttribBinder<VT>::bind();
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo.getBuffer());
+        vbo.bindAttrib();
+        ibo.bindAttrib();
         return newvao;
     }
 
-    std::pair<unsigned, unsigned> getBase(irr::scene::IMeshBuffer *mb)
+    template<typename... VertexAnnotation>
+    std::pair<unsigned, unsigned> getBase(irr::scene::IMeshBuffer *mb, VertexAnnotation *...ptr)
     {
         if (mappedBaseVertexBaseIndex.find(mb) == mappedBaseVertexBaseIndex.end())
         {
-            append(mb);
+            append(mb, ptr...);
             regenerateVAO();
             regenerateInstanceVao();
         }
@@ -488,13 +571,11 @@ class VAOManager : public Singleton<VAOManager>
     irr::video::E_VERTEX_TYPE getVertexType(enum VTXTYPE tp);
 public:
     VAOManager();
-    std::pair<unsigned, unsigned> getBase(irr::scene::IMeshBuffer *);
+    std::pair<unsigned, unsigned> getBase(irr::scene::IMeshBuffer *, void * = nullptr);
     GLuint getInstanceBuffer(InstanceType it);
     void *getInstanceBufferPtr(InstanceType it);
-    unsigned getVBO(irr::video::E_VERTEX_TYPE type);
-    void *getVBOPtr(irr::video::E_VERTEX_TYPE type);
-    unsigned getVAO(irr::video::E_VERTEX_TYPE type);
-    unsigned getInstanceVAO(irr::video::E_VERTEX_TYPE vt, enum InstanceType it);
+    unsigned getVAO(irr::video::E_VERTEX_TYPE type, bool skinned);
+    unsigned getInstanceVAO(irr::video::E_VERTEX_TYPE vt, bool skinned, enum InstanceType it);
     ~VAOManager();
 };
 

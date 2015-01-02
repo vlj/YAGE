@@ -275,6 +275,21 @@ handleSTKCommon(scene::ISceneNode *Node, std::vector<scene::ISceneNode *> *Immed
     for (unsigned i = 0; i < 4; i++)
         culledforshadowcam[i] = culledforshadowcam[i] || isCulledPrecise(shadowcam[i], Node);
 
+
+    // Animated
+    // TODO : Handle instancing
+    if (STKAnimatedMesh *animatedMesh = dynamic_cast<STKAnimatedMesh *>(node))
+    {
+        if (!culledforcam)
+            ListSkinned::getInstance()->SolidPass.push_back(animatedMesh);
+        for (unsigned cascade = 0; cascade < 4; ++cascade)
+        {
+            if (!culledforshadowcam[cascade])
+                ListSkinned::getInstance()->Shadows[cascade].push_back(animatedMesh);
+        }
+        return;
+    }
+
     // Transparent
 
     if (World::getWorld() && World::getWorld()->isFogEnabled())
@@ -567,6 +582,7 @@ static void FixBoundingBoxes(scene::ISceneNode* node)
 void IrrDriver::PrepareDrawCalls(scene::ICameraSceneNode *camnode)
 {
     windDir = getWindDir();
+    ListSkinned::getInstance()->clear();
     ListBlendTransparent::getInstance()->clear();
     ListAdditiveTransparent::getInstance()->clear();
     ListBlendTransparentFog::getInstance()->clear();

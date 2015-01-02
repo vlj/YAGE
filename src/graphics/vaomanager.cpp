@@ -22,7 +22,21 @@ VAOManager::~VAOManager()
     InstanceBuffer<InstanceDataShadow>::getInstance()->kill();
     InstanceBuffer<InstanceDataRSM>::getInstance()->kill();
     InstanceBuffer<GlowInstanceData>::getInstance()->kill();
+
+    VertexArrayObject<FormattedVertexStorage<video::S3DVertex, SkinnedVertexData> >::getInstance()->kill();
+    VertexArrayObject<FormattedVertexStorage<video::S3DVertex> >::getInstance()->kill();
+    VertexArrayObject<FormattedVertexStorage<video::S3DVertex2TCoords> >::getInstance()->kill();
+    VertexArrayObject<FormattedVertexStorage<video::S3DVertexTangents> >::getInstance()->kill();
 }
+
+
+template<>
+struct VertexAttribBinder <u16>
+{
+public:
+    static void bind()
+    {}
+};
 
 template<>
 struct VertexAttribBinder<video::S3DVertex>
@@ -96,18 +110,45 @@ public:
     }
 };
 
-std::pair<unsigned, unsigned> VAOManager::getBase(scene::IMeshBuffer *mb)
+template<>
+struct VertexAttribBinder <struct SkinnedVertexData >
 {
+public:
+    static void bind()
+    {
+        glEnableVertexAttribArray(7);
+        glVertexAttribIPointer(7, 1, GL_INT, 4 * 2 * sizeof(float), 0);
+        glEnableVertexAttribArray(8);
+        glVertexAttribPointer(8, 1, GL_FLOAT, GL_FALSE, 4 * 2 * sizeof(float), (GLvoid*)(sizeof(int)));
+        glEnableVertexAttribArray(9);
+        glVertexAttribIPointer(9, 1, GL_INT, 4 * 2 * sizeof(float), (GLvoid*)(sizeof(float) + sizeof(int)));
+        glEnableVertexAttribArray(10);
+        glVertexAttribPointer(10, 1, GL_FLOAT, GL_FALSE, 4 * 2 * sizeof(float), (GLvoid*)(sizeof(float) + 2 * sizeof(int)));
+        glEnableVertexAttribArray(11);
+        glVertexAttribIPointer(11, 1, GL_INT, 4 * 2 * sizeof(float), (GLvoid*)(2 * sizeof(float) + 2 * sizeof(int)));
+        glEnableVertexAttribArray(12);
+        glVertexAttribPointer(12, 1, GL_FLOAT, GL_FALSE, 4 * 2 * sizeof(float), (GLvoid*)(2 * sizeof(float) + 3 * sizeof(int)));
+        glEnableVertexAttribArray(13);
+        glVertexAttribIPointer(13, 1, GL_INT, 4 * 2 * sizeof(float), (GLvoid*)(3 * sizeof(float) + 3 * sizeof(int)));
+        glEnableVertexAttribArray(14);
+        glVertexAttribPointer(14, 1, GL_FLOAT, GL_FALSE, 4 * 2 * sizeof(float), (GLvoid*)(3 * sizeof(float) + 4 * sizeof(int)));
+    }
+};
+
+std::pair<unsigned, unsigned> VAOManager::getBase(scene::IMeshBuffer *mb, void *extraVertexInfo)
+{
+    if (extraVertexInfo != nullptr)
+        return VertexArrayObject<FormattedVertexStorage<video::S3DVertex, SkinnedVertexData> >::getInstance()->getBase(mb, extraVertexInfo);
     switch (mb->getVertexType())
     {
     default:
         assert(0 && "Wrong type");
     case video::EVT_STANDARD:
-        return VertexArrayObject<video::S3DVertex>::getInstance()->getBase(mb);
+        return VertexArrayObject<FormattedVertexStorage<video::S3DVertex> >::getInstance()->getBase(mb);
     case video::EVT_2TCOORDS:
-        return VertexArrayObject<video::S3DVertex2TCoords>::getInstance()->getBase(mb);
+        return VertexArrayObject<FormattedVertexStorage<video::S3DVertex2TCoords> >::getInstance()->getBase(mb);
     case video::EVT_TANGENTS:
-        return VertexArrayObject<video::S3DVertexTangents>::getInstance()->getBase(mb);
+        return VertexArrayObject<FormattedVertexStorage<video::S3DVertexTangents> >::getInstance()->getBase(mb);
     }
 }
 
@@ -118,15 +159,15 @@ GLuint VAOManager::getInstanceBuffer(InstanceType it)
     default:
         assert(0 && "wrong instance type");
     case InstanceTypeDualTex:
-        return InstanceBuffer<InstanceDataDualTex>::getInstance()->getBuffer();
+        return InstanceBuffer<InstanceDataDualTex>::getInstance()->getBuffer(0);
     case InstanceTypeThreeTex:
-        return InstanceBuffer<InstanceDataThreeTex>::getInstance()->getBuffer();
+        return InstanceBuffer<InstanceDataThreeTex>::getInstance()->getBuffer(0);
     case InstanceTypeShadow:
-        return InstanceBuffer<InstanceDataShadow>::getInstance()->getBuffer();
+        return InstanceBuffer<InstanceDataShadow>::getInstance()->getBuffer(0);
     case InstanceTypeRSM:
-        return InstanceBuffer<InstanceDataRSM>::getInstance()->getBuffer();
+        return InstanceBuffer<InstanceDataRSM>::getInstance()->getBuffer(0);
     case InstanceTypeGlow:
-        return InstanceBuffer<GlowInstanceData>::getInstance()->getBuffer();
+        return InstanceBuffer<GlowInstanceData>::getInstance()->getBuffer(0);
     }
 }
 
@@ -149,52 +190,41 @@ void *VAOManager::getInstanceBufferPtr(InstanceType it)
     }
 }
 
-unsigned VAOManager::getVBO(irr::video::E_VERTEX_TYPE type)
+unsigned VAOManager::getVAO(irr::video::E_VERTEX_TYPE type, bool skinned)
 {
+    if (skinned)
+        return VertexArrayObject<FormattedVertexStorage<video::S3DVertex, SkinnedVertexData> >::getInstance()->getVAO();
     switch (type)
     {
     default:
         assert(0 && "Wrong type");
     case video::EVT_STANDARD:
-        return VertexArrayObject<video::S3DVertex>::getInstance()->vbo.getBuffer();
+        return VertexArrayObject<FormattedVertexStorage<video::S3DVertex> >::getInstance()->getVAO();
     case video::EVT_2TCOORDS:
-        return VertexArrayObject<video::S3DVertex2TCoords>::getInstance()->vbo.getBuffer();
+        return VertexArrayObject<FormattedVertexStorage<video::S3DVertex2TCoords> >::getInstance()->getVAO();
     case video::EVT_TANGENTS:
-        return VertexArrayObject<video::S3DVertexTangents>::getInstance()->vbo.getBuffer();
+        return VertexArrayObject<FormattedVertexStorage<video::S3DVertexTangents> >::getInstance()->getVAO();
     }
 }
 
-void *VAOManager::getVBOPtr(irr::video::E_VERTEX_TYPE type)
+unsigned VAOManager::getInstanceVAO(irr::video::E_VERTEX_TYPE vt, bool skinned, enum InstanceType it)
 {
-    switch (type)
+    if (skinned)
     {
-    default:
-        assert(0 && "Wrong type");
-    case video::EVT_STANDARD:
-        return VertexArrayObject<video::S3DVertex>::getInstance()->vbo.getPointer();
-    case video::EVT_2TCOORDS:
-        return VertexArrayObject<video::S3DVertex2TCoords>::getInstance()->vbo.getPointer();
-    case video::EVT_TANGENTS:
-        return VertexArrayObject<video::S3DVertexTangents>::getInstance()->vbo.getPointer();
+        switch (it)
+        {
+        case InstanceTypeDualTex:
+            return VertexArrayObject<FormattedVertexStorage<video::S3DVertex, SkinnedVertexData> >::getInstance()->vao_instanceDualTex;
+        case InstanceTypeThreeTex:
+            return VertexArrayObject<FormattedVertexStorage<video::S3DVertex, SkinnedVertexData> >::getInstance()->vao_instanceThreeTex;
+        case InstanceTypeShadow:
+            return VertexArrayObject<FormattedVertexStorage<video::S3DVertex, SkinnedVertexData> >::getInstance()->vao_instanceShadow;
+        case InstanceTypeRSM:
+            return VertexArrayObject<FormattedVertexStorage<video::S3DVertex, SkinnedVertexData> >::getInstance()->vao_instanceRSM;
+        case InstanceTypeGlow:
+            return VertexArrayObject<FormattedVertexStorage<video::S3DVertex, SkinnedVertexData> >::getInstance()->vao_instanceGlowData;
+        }
     }
-}
-unsigned VAOManager::getVAO(irr::video::E_VERTEX_TYPE type)
-{
-    switch (type)
-    {
-    default:
-        assert(0 && "Wrong type");
-    case video::EVT_STANDARD:
-        return VertexArrayObject<video::S3DVertex>::getInstance()->getVAO();
-    case video::EVT_2TCOORDS:
-        return VertexArrayObject<video::S3DVertex2TCoords>::getInstance()->getVAO();
-    case video::EVT_TANGENTS:
-        return VertexArrayObject<video::S3DVertexTangents>::getInstance()->getVAO();
-    }
-}
-
-unsigned VAOManager::getInstanceVAO(irr::video::E_VERTEX_TYPE vt, enum InstanceType it)
-{
     switch (vt)
     {
     default:
@@ -205,15 +235,15 @@ unsigned VAOManager::getInstanceVAO(irr::video::E_VERTEX_TYPE vt, enum InstanceT
         default:
             assert(0 && "wrong instance type");
         case InstanceTypeDualTex:
-            return VertexArrayObject<video::S3DVertex>::getInstance()->vao_instanceDualTex;
+            return VertexArrayObject<FormattedVertexStorage<video::S3DVertex> >::getInstance()->vao_instanceDualTex;
         case InstanceTypeThreeTex:
-            return VertexArrayObject<video::S3DVertex>::getInstance()->vao_instanceThreeTex;
+            return VertexArrayObject<FormattedVertexStorage<video::S3DVertex> >::getInstance()->vao_instanceThreeTex;
         case InstanceTypeShadow:
-            return VertexArrayObject<video::S3DVertex>::getInstance()->vao_instanceShadow;
+            return VertexArrayObject<FormattedVertexStorage<video::S3DVertex> >::getInstance()->vao_instanceShadow;
         case InstanceTypeRSM:
-            return VertexArrayObject<video::S3DVertex>::getInstance()->vao_instanceRSM;
+            return VertexArrayObject<FormattedVertexStorage<video::S3DVertex> >::getInstance()->vao_instanceRSM;
         case InstanceTypeGlow:
-            return VertexArrayObject<video::S3DVertex>::getInstance()->vao_instanceGlowData;
+            return VertexArrayObject<FormattedVertexStorage<video::S3DVertex> >::getInstance()->vao_instanceGlowData;
         }
         break;
     case video::EVT_2TCOORDS:
@@ -222,15 +252,15 @@ unsigned VAOManager::getInstanceVAO(irr::video::E_VERTEX_TYPE vt, enum InstanceT
         default:
             assert(0 && "wrong instance type");
         case InstanceTypeDualTex:
-            return VertexArrayObject<video::S3DVertex2TCoords>::getInstance()->vao_instanceDualTex;
+            return VertexArrayObject<FormattedVertexStorage<video::S3DVertex2TCoords> >::getInstance()->vao_instanceDualTex;
         case InstanceTypeThreeTex:
-            return VertexArrayObject<video::S3DVertex2TCoords>::getInstance()->vao_instanceThreeTex;
+            return VertexArrayObject<FormattedVertexStorage<video::S3DVertex2TCoords> >::getInstance()->vao_instanceThreeTex;
         case InstanceTypeShadow:
-            return VertexArrayObject<video::S3DVertex2TCoords>::getInstance()->vao_instanceShadow;
+            return VertexArrayObject<FormattedVertexStorage<video::S3DVertex2TCoords> >::getInstance()->vao_instanceShadow;
         case InstanceTypeRSM:
-            return VertexArrayObject<video::S3DVertex2TCoords>::getInstance()->vao_instanceRSM;
+            return VertexArrayObject<FormattedVertexStorage<video::S3DVertex2TCoords> >::getInstance()->vao_instanceRSM;
         case InstanceTypeGlow:
-            return VertexArrayObject<video::S3DVertex2TCoords>::getInstance()->vao_instanceGlowData;
+            return VertexArrayObject<FormattedVertexStorage<video::S3DVertex2TCoords> >::getInstance()->vao_instanceGlowData;
         }
         break;
     case video::EVT_TANGENTS:
@@ -239,15 +269,15 @@ unsigned VAOManager::getInstanceVAO(irr::video::E_VERTEX_TYPE vt, enum InstanceT
         default:
             assert(0 && "wrong instance type");
         case InstanceTypeDualTex:
-            return VertexArrayObject<video::S3DVertexTangents>::getInstance()->vao_instanceDualTex;
+            return VertexArrayObject<FormattedVertexStorage<video::S3DVertexTangents> >::getInstance()->vao_instanceDualTex;
         case InstanceTypeThreeTex:
-            return VertexArrayObject<video::S3DVertexTangents>::getInstance()->vao_instanceThreeTex;
+            return VertexArrayObject<FormattedVertexStorage<video::S3DVertexTangents> >::getInstance()->vao_instanceThreeTex;
         case InstanceTypeShadow:
-            return VertexArrayObject<video::S3DVertexTangents>::getInstance()->vao_instanceShadow;
+            return VertexArrayObject<FormattedVertexStorage<video::S3DVertexTangents> >::getInstance()->vao_instanceShadow;
         case InstanceTypeRSM:
-            return VertexArrayObject<video::S3DVertexTangents>::getInstance()->vao_instanceRSM;
+            return VertexArrayObject<FormattedVertexStorage<video::S3DVertexTangents> >::getInstance()->vao_instanceRSM;
         case InstanceTypeGlow:
-            return VertexArrayObject<video::S3DVertexTangents>::getInstance()->vao_instanceGlowData;
+            return VertexArrayObject<FormattedVertexStorage<video::S3DVertexTangents> >::getInstance()->vao_instanceGlowData;
         }
         break;
     }

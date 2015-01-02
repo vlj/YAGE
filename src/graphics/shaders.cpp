@@ -909,6 +909,16 @@ namespace MeshShader
         AssignSamplerNames(Program, 0, "tex", 1, "glosstex");
     }
 
+    SkinnedObjectShader::SkinnedObjectShader()
+    {
+        Program = LoadProgram(OBJECT,
+            GL_VERTEX_SHADER, file_manager->getAsset("shaders/skinning.vert").c_str(),
+            GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/encode_normal.frag").c_str(),
+            GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/object.frag").c_str());
+        AssignUniforms("ModelMatrix", "InverseModelMatrix", "JointTransform[0]");
+        AssignSamplerNames(Program, 0, "tex", 1, "glosstex");
+    }
+
     InstancedObjectShader::InstancedObjectShader()
     {
         Program = LoadProgram(OBJECT,
@@ -928,6 +938,16 @@ namespace MeshShader
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/encode_normal.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/objectref.frag").c_str());
         AssignUniforms("ModelMatrix", "InverseModelMatrix", "TextureMatrix");
+        AssignSamplerNames(Program, 0, "tex", 1, "glosstex");
+    }
+
+    SkinnedRefObjectShader::SkinnedRefObjectShader()
+    {
+        Program = LoadProgram(OBJECT,
+            GL_VERTEX_SHADER, file_manager->getAsset("shaders/skinning.vert").c_str(),
+            GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/encode_normal.frag").c_str(),
+            GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/objectref.frag").c_str());
+        AssignUniforms("ModelMatrix", "InverseModelMatrix", "JointTransform[0]");
         AssignSamplerNames(Program, 0, "tex", 1, "glosstex");
     }
 
@@ -1108,6 +1128,27 @@ namespace MeshShader
         AssignUniforms("layer", "ModelMatrix");
     }
 
+    SkinnedObjectShadowShader::SkinnedObjectShadowShader()
+    {
+        // Geometry shader needed
+        if (CVS->getGLSLVersion() < 150)
+            return;
+        if (CVS->isAMDVertexShaderLayerUsable())
+        {
+            Program = LoadProgram(OBJECT,
+                GL_VERTEX_SHADER, file_manager->getAsset("shaders/shadow_skinning.vert").c_str(),
+                GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/shadow.frag").c_str());
+        }
+        else
+        {
+            Program = LoadProgram(OBJECT,
+                GL_VERTEX_SHADER, file_manager->getAsset("shaders/shadow_skinning.vert").c_str(),
+                GL_GEOMETRY_SHADER, file_manager->getAsset("shaders/shadow.geom").c_str(),
+                GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/shadow.frag").c_str());
+        }
+        AssignUniforms("layer", "ModelMatrix", "JointTransform[0]");
+    }
+
     RSMShader::RSMShader()
     {
         Program = LoadProgram(OBJECT,
@@ -1181,6 +1222,28 @@ namespace MeshShader
                 GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/shadowref.frag").c_str());
         }
         AssignUniforms("layer", "ModelMatrix");
+        AssignSamplerNames(Program, 0, "tex");
+    }
+
+    SkinnedRefObjectShadowShader::SkinnedRefObjectShadowShader()
+    {
+        // Geometry shader needed
+        if (CVS->getGLSLVersion() < 150)
+            return;
+        if (CVS->isAMDVertexShaderLayerUsable())
+        {
+            Program = LoadProgram(OBJECT,
+                GL_VERTEX_SHADER, file_manager->getAsset("shaders/shadow_skinning.vert").c_str(),
+                GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/shadowref.frag").c_str());
+        }
+        else
+        {
+            Program = LoadProgram(OBJECT,
+                GL_VERTEX_SHADER, file_manager->getAsset("shaders/shadow_skinning.vert").c_str(),
+                GL_GEOMETRY_SHADER, file_manager->getAsset("shaders/shadow.geom").c_str(),
+                GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/shadowref.frag").c_str());
+        }
+        AssignUniforms("layer", "ModelMatrix", "JointTransform[0]");
         AssignSamplerNames(Program, 0, "tex");
     }
 
