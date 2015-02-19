@@ -253,20 +253,25 @@ struct BindTexture<>
     {}
 };
 
-GLuint createNearestSampler();
-
 template<SamplerType...tp>
 struct CreateSamplers<Nearest_Filtered, tp...>
 {
     static void exec(std::vector<unsigned> &v, std::vector<GLenum> &e)
     {
-        v.push_back(createNearestSampler());
+        unsigned id;
+#ifdef GL_VERSION_3_3
+        glGenSamplers(1, &id);
+        glSamplerParameteri(id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glSamplerParameteri(id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glSamplerParameteri(id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glSamplerParameteri(id, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glSamplerParameterf(id, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.);
+#endif
+        v.push_back(id);
         e.push_back(GL_TEXTURE_2D);
         CreateSamplers<tp...>::exec(v, e);
     }
 };
-
-void BindTextureNearest(unsigned TU, unsigned tid);
 
 template<SamplerType...tp>
 struct BindTexture<Nearest_Filtered, tp...>
@@ -274,7 +279,13 @@ struct BindTexture<Nearest_Filtered, tp...>
     template<int N, typename...Args>
     static void exec(const std::vector<unsigned> &TU, GLuint TexId, Args... args)
     {
-        BindTextureNearest(TU[N], TexId);
+        glActiveTexture(GL_TEXTURE0 + TU[N]);
+        glBindTexture(GL_TEXTURE_2D, TexId);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.);
         BindTexture<tp...>::template exec<N + 1>(TU, args...);
     }
 };
@@ -285,14 +296,15 @@ struct CreateSamplers<Neared_Clamped_Filtered, tp...>
     static void exec(std::vector<unsigned> &v, std::vector<GLenum> &e)
     {
         unsigned id;
+#ifdef GL_VERSION_3_3
         glGenSamplers(1, &id);
         glSamplerParameteri(id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glSamplerParameteri(id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glSamplerParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glSamplerParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glSamplerParameterf(id, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.);
-
-        v.push_back(createNearestSampler());
+#endif
+        v.push_back(id);
         e.push_back(GL_TEXTURE_2D);
         CreateSamplers<tp...>::exec(v, e);
     }
@@ -315,20 +327,25 @@ struct BindTexture<Neared_Clamped_Filtered, tp...>
     }
 };
 
-GLuint createBilinearSampler();
-
 template<SamplerType...tp>
 struct CreateSamplers<Bilinear_Filtered, tp...>
 {
     static void exec(std::vector<unsigned> &v, std::vector<GLenum> &e)
     {
-        v.push_back(createBilinearSampler());
+        unsigned id;
+#ifdef GL_VERSION_3_3
+        glGenSamplers(1, &id);
+        glSamplerParameteri(id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glSamplerParameteri(id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glSamplerParameteri(id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glSamplerParameteri(id, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glSamplerParameterf(id, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.);
+#endif
+        v.push_back(id);
         e.push_back(GL_TEXTURE_2D);
         CreateSamplers<tp...>::exec(v, e);
     }
 };
-
-void BindTextureBilinear(unsigned TU, unsigned tex);
 
 template<SamplerType...tp>
 struct BindTexture<Bilinear_Filtered, tp...>
@@ -336,25 +353,36 @@ struct BindTexture<Bilinear_Filtered, tp...>
     template<int N, typename...Args>
     static void exec(const std::vector<unsigned> &TU, GLuint TexId, Args... args)
     {
-        BindTextureBilinear(TU[N], TexId);
+        glActiveTexture(GL_TEXTURE0 + TU[N]);
+        glBindTexture(GL_TEXTURE_2D, TexId);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.);
         BindTexture<tp...>::template exec<N + 1>(TU, args...);
     }
 };
-
-GLuint createBilinearClampedSampler();
 
 template<SamplerType...tp>
 struct CreateSamplers<Bilinear_Clamped_Filtered, tp...>
 {
     static void exec(std::vector<unsigned> &v, std::vector<GLenum> &e)
     {
-        v.push_back(createBilinearClampedSampler());
+        unsigned id;
+#ifdef GL_VERSION_3_3
+        glGenSamplers(1, &id);
+        glSamplerParameteri(id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glSamplerParameteri(id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glSamplerParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glSamplerParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glSamplerParameterf(id, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.);
+#endif
+        v.push_back(id);
         e.push_back(GL_TEXTURE_2D);
         CreateSamplers<tp...>::exec(v, e);
     }
 };
-
-void BindTextureBilinearClamped(unsigned TU, unsigned tex);
 
 template<SamplerType...tp>
 struct BindTexture<Bilinear_Clamped_Filtered, tp...>
@@ -362,25 +390,36 @@ struct BindTexture<Bilinear_Clamped_Filtered, tp...>
     template<int N, typename...Args>
     static void exec(const std::vector<unsigned> &TU, GLuint TexId, Args... args)
     {
-        BindTextureBilinearClamped(TU[N], TexId);
+        glActiveTexture(GL_TEXTURE0 + TU[N]);
+        glBindTexture(GL_TEXTURE_2D, TexId);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.);
         BindTexture<tp...>::template exec<N + 1>(TU, args...);
     }
 };
-
-GLuint createSemiTrilinearSampler();
 
 template<SamplerType...tp>
 struct CreateSamplers<Semi_trilinear, tp...>
 {
     static void exec(std::vector<unsigned> &v, std::vector<GLenum> &e)
     {
-        v.push_back(createSemiTrilinearSampler());
+        unsigned id;
+#ifdef GL_VERSION_3_3
+        glGenSamplers(1, &id);
+        glSamplerParameteri(id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glSamplerParameteri(id, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+        glSamplerParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glSamplerParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glSamplerParameterf(id, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.);
+#endif
+        v.push_back(id);
         e.push_back(GL_TEXTURE_2D);
         CreateSamplers<tp...>::exec(v, e);
     }
 };
-
-void BindTextureSemiTrilinear(unsigned TU, unsigned tex);
 
 template<SamplerType...tp>
 struct BindTexture<Semi_trilinear, tp...>
@@ -388,47 +427,37 @@ struct BindTexture<Semi_trilinear, tp...>
     template<int N, typename...Args>
     static void exec(const std::vector<unsigned> &TU, GLuint TexId, Args... args)
     {
-        BindTextureSemiTrilinear(TU[N], TexId);
+        glActiveTexture(GL_TEXTURE0 + TU[N]);
+        glBindTexture(GL_TEXTURE_2D, TexId);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.);
         BindTexture<tp...>::template exec<N + 1>(TU, args...);
     }
 };
-
-GLuint createTrilinearSampler();
 
 template<SamplerType...tp>
 struct CreateSamplers<Trilinear_Anisotropic_Filtered, tp...>
 {
     static void exec(std::vector<unsigned> &v, std::vector<GLenum> &e)
     {
-        v.push_back(createTrilinearSampler());
+        unsigned id;
+#ifdef GL_VERSION_3_3
+        glGenSamplers(1, &id);
+        glSamplerParameteri(id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glSamplerParameteri(id, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glSamplerParameteri(id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glSamplerParameteri(id, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+        int aniso = UserConfigParams::m_anisotropic;
+        if (aniso == 0) aniso = 1;
+        glSamplerParameterf(id, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float)aniso);
+#endif
+        v.push_back(id);
         e.push_back(GL_TEXTURE_2D);
         CreateSamplers<tp...>::exec(v, e);
-    }
-};
-
-void BindTextureTrilinearAnisotropic(unsigned TU, unsigned tex);
-
-template<SamplerType...tp>
-struct CreateSamplers<Trilinear_cubemap, tp...>
-{
-    static void exec(std::vector<unsigned> &v, std::vector<GLenum> &e)
-    {
-        v.push_back(createTrilinearSampler());
-        e.push_back(GL_TEXTURE_CUBE_MAP);
-        CreateSamplers<tp...>::exec(v, e);
-    }
-};
-
-void BindCubemapTrilinear(unsigned TU, unsigned tex);
-
-template<SamplerType...tp>
-struct BindTexture<Trilinear_cubemap, tp...>
-{
-    template<int N, typename...Args>
-    static void exec(const std::vector<unsigned> &TU, GLuint TexId, Args... args)
-    {
-        BindCubemapTrilinear(TU[N], TexId);
-        BindTexture<tp...>::template exec<N + 1>(TU, args...);
     }
 };
 
@@ -438,7 +467,59 @@ struct BindTexture<Trilinear_Anisotropic_Filtered, tp...>
     template<int N, typename...Args>
     static void exec(const std::vector<unsigned> &TU, GLuint TexId, Args... args)
     {
-        BindTextureTrilinearAnisotropic(TU[N], TexId);
+        glActiveTexture(GL_TEXTURE0 + TU[N]);
+        glBindTexture(GL_TEXTURE_2D, TexId);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+        int aniso = UserConfigParams::m_anisotropic;
+        if (aniso == 0) aniso = 1;
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float)aniso);
+        BindTexture<tp...>::template exec<N + 1>(TU, args...);
+    }
+};
+
+template<SamplerType...tp>
+struct CreateSamplers<Trilinear_cubemap, tp...>
+{
+    static void exec(std::vector<unsigned> &v, std::vector<GLenum> &e)
+    {
+        unsigned id;
+#ifdef GL_VERSION_3_3
+        glGenSamplers(1, &id);
+        glSamplerParameteri(id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glSamplerParameteri(id, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glSamplerParameteri(id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glSamplerParameteri(id, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+        int aniso = UserConfigParams::m_anisotropic;
+        if (aniso == 0) aniso = 1;
+        glSamplerParameterf(id, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float)aniso);
+#endif
+        v.push_back(id);
+        e.push_back(GL_TEXTURE_CUBE_MAP);
+        CreateSamplers<tp...>::exec(v, e);
+    }
+};
+
+template<SamplerType...tp>
+struct BindTexture<Trilinear_cubemap, tp...>
+{
+    template<int N, typename...Args>
+    static void exec(const std::vector<unsigned> &TU, GLuint TexId, Args... args)
+    {
+        glActiveTexture(GL_TEXTURE0 + TU[N]);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, TexId);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+        int aniso = UserConfigParams::m_anisotropic;
+        if (aniso == 0) aniso = 1;
+        glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float)aniso);
         BindTexture<tp...>::template exec<N + 1>(TU, args...);
     }
 };
@@ -448,13 +529,20 @@ struct CreateSamplers<Volume_Linear_Filtered, tp...>
 {
     static void exec(std::vector<unsigned> &v, std::vector<GLenum> &e)
     {
-        v.push_back(createBilinearSampler());
+        unsigned id;
+#ifdef GL_VERSION_3_3
+        glGenSamplers(1, &id);
+        glSamplerParameteri(id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glSamplerParameteri(id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glSamplerParameteri(id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glSamplerParameteri(id, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glSamplerParameterf(id, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.);
+#endif
+        v.push_back(id);
         e.push_back(GL_TEXTURE_3D);
         CreateSamplers<tp...>::exec(v, e);
     }
 };
-
-void BindTextureVolume(unsigned TU, unsigned tex);
 
 template<SamplerType...tp>
 struct BindTexture<Volume_Linear_Filtered, tp...>
@@ -462,25 +550,37 @@ struct BindTexture<Volume_Linear_Filtered, tp...>
     template<int N, typename...Args>
     static void exec(const std::vector<unsigned> &TU, GLuint TexId, Args... args)
     {
-        BindTextureVolume(TU[N], TexId);
+        glActiveTexture(GL_TEXTURE0 + TU[N]);
+        glBindTexture(GL_TEXTURE_3D, TexId);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.);
         BindTexture<tp...>::template exec<N + 1>(TU, args...);
     }
 };
-
-GLuint createShadowSampler();
 
 template<SamplerType...tp>
 struct CreateSamplers<Shadow_Sampler, tp...>
 {
     static void exec(std::vector<unsigned> &v, std::vector<GLenum> &e)
     {
-        v.push_back(createShadowSampler());
+        unsigned id;
+#ifdef GL_VERSION_3_3
+        glGenSamplers(1, &id);
+        glSamplerParameteri(id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glSamplerParameteri(id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glSamplerParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glSamplerParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glSamplerParameterf(id, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+        glSamplerParameterf(id, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+#endif
+        v.push_back(id);
         e.push_back(GL_TEXTURE_2D_ARRAY);
         CreateSamplers<tp...>::exec(v, e);
     }
 };
-
-void BindTextureShadow(unsigned TU, unsigned tex);
 
 template<SamplerType...tp>
 struct BindTexture<Shadow_Sampler, tp...>
@@ -488,25 +588,40 @@ struct BindTexture<Shadow_Sampler, tp...>
     template <int N, typename...Args>
     static void exec(const std::vector<unsigned> &TU, GLuint TexId, Args... args)
     {
-        BindTextureShadow(TU[N], TexId);
+        glActiveTexture(GL_TEXTURE0 + TU[N]);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, TexId);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+        glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
         BindTexture<tp...>::template exec<N + 1>(TU, args...);
     }
 };
-
-GLuint createTrilinearClampedArray();
 
 template<SamplerType...tp>
 struct CreateSamplers<Trilinear_Clamped_Array2D, tp...>
 {
     static void exec(std::vector<unsigned> &v, std::vector<GLenum> &e)
     {
-        v.push_back(createTrilinearClampedArray());
+        unsigned id;
+#ifdef GL_VERSION_3_3
+        glGenSamplers(1, &id);
+        glSamplerParameteri(id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glSamplerParameteri(id, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glSamplerParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glSamplerParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        int aniso = UserConfigParams::m_anisotropic;
+        if (aniso == 0) aniso = 1;
+        glSamplerParameterf(id, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float)aniso);
+#endif
+        v.push_back(id);
         e.push_back(GL_TEXTURE_2D_ARRAY);
         CreateSamplers<tp...>::exec(v, e);
     }
 };
-
-void BindTrilinearClampedArrayTexture(unsigned TU, unsigned tex);
 
 template<SamplerType...tp>
 struct BindTexture<Trilinear_Clamped_Array2D, tp...>
@@ -514,7 +629,16 @@ struct BindTexture<Trilinear_Clamped_Array2D, tp...>
     template <int N, typename...Args>
     static void exec(const std::vector<unsigned> &TU, GLuint TexId, Args... args)
     {
-        BindTrilinearClampedArrayTexture(TU[N], TexId);
+        glActiveTexture(GL_TEXTURE0 + TU[N]);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, TexId);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        int aniso = UserConfigParams::m_anisotropic;
+        if (aniso == 0) aniso = 1;
+        glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float)aniso);
         BindTexture<tp...>::template exec<N + 1>(TU, args...);
     }
 };
