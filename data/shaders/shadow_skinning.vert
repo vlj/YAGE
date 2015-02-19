@@ -27,6 +27,15 @@ in vec2 Texcoord;
 in vec2 SecondTexcoord;
 in vec3 Tangent;
 in vec3 Bitangent;
+
+in int index0;
+in float weight0;
+in int index1;
+in float weight1;
+in int index2;
+in float weight2;
+in int index3;
+in float weight3;
 #endif
 
 #ifdef VSLayer

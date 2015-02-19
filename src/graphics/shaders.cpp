@@ -541,6 +541,25 @@ static void setObjectAttribute(GLuint ProgramID)
         glBindAttribLocation(ProgramID, 9, "Scale");
 }
 
+static void setSkinnedObjectAttribute(GLuint ProgramID)
+{
+    glBindAttribLocation(ProgramID, 0, "Position");
+    glBindAttribLocation(ProgramID, 1, "Normal");
+    glBindAttribLocation(ProgramID, 2, "Color");
+    glBindAttribLocation(ProgramID, 3, "Texcoord");
+    glBindAttribLocation(ProgramID, 4, "SecondTexcoord");
+    glBindAttribLocation(ProgramID, 5, "Tangent");
+    glBindAttribLocation(ProgramID, 6, "Bitangent");
+    glBindAttribLocation(ProgramID, 7, "index0");
+    glBindAttribLocation(ProgramID, 8, "weight0");
+    glBindAttribLocation(ProgramID, 9, "index1");
+    glBindAttribLocation(ProgramID, 10, "weight1");
+    glBindAttribLocation(ProgramID, 11, "index2");
+    glBindAttribLocation(ProgramID, 12, "weight2");
+    glBindAttribLocation(ProgramID, 13, "index3");
+    glBindAttribLocation(ProgramID, 14, "weight3");
+}
+
 static void setParticleAttribute(GLuint ProgramID)
 {
         glBindAttribLocation(ProgramID, 1, "lifetime");
@@ -693,7 +712,7 @@ namespace MeshShader
 
     SkinnedObjectShader::SkinnedObjectShader()
     {
-        Program = LoadProgram(setObjectAttribute,
+        Program = LoadProgram(setSkinnedObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/skinning.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/encode_normal.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/object.frag").c_str());
@@ -725,7 +744,7 @@ namespace MeshShader
 
     SkinnedRefObjectShader::SkinnedRefObjectShader()
     {
-        Program = LoadProgram(setObjectAttribute,
+        Program = LoadProgram(setSkinnedObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/skinning.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/encode_normal.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/objectref.frag").c_str());
@@ -917,13 +936,13 @@ namespace MeshShader
             return;
         if (CVS->isAMDVertexShaderLayerUsable())
         {
-            Program = LoadProgram(setObjectAttribute,
+            Program = LoadProgram(setSkinnedObjectAttribute,
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/shadow_skinning.vert").c_str(),
                 GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/shadow.frag").c_str());
         }
         else
         {
-            Program = LoadProgram(setObjectAttribute,
+            Program = LoadProgram(setSkinnedObjectAttribute,
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/shadow_skinning.vert").c_str(),
                 GL_GEOMETRY_SHADER, file_manager->getAsset("shaders/shadow.geom").c_str(),
                 GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/shadow.frag").c_str());
@@ -1014,13 +1033,13 @@ namespace MeshShader
             return;
         if (CVS->isAMDVertexShaderLayerUsable())
         {
-            Program = LoadProgram(setObjectAttribute,
+            Program = LoadProgram(setSkinnedObjectAttribute,
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/shadow_skinning.vert").c_str(),
                 GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/shadowref.frag").c_str());
         }
         else
         {
-            Program = LoadProgram(setObjectAttribute,
+            Program = LoadProgram(setSkinnedObjectAttribute,
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/shadow_skinning.vert").c_str(),
                 GL_GEOMETRY_SHADER, file_manager->getAsset("shaders/shadow.geom").c_str(),
                 GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/shadowref.frag").c_str());
