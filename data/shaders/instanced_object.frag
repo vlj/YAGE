@@ -35,7 +35,7 @@ void main(void)
     float emitval = texture(glosstex, uv).b;
 #endif
     EncodedNormal_Specular_Reflectance.xy = 0.5 * EncodeNormal(normalize(nor)) + 0.5;
-    EncodedNormal_Specular_Reflectance.z = glossmap;
+    EncodedNormal_Specular_Reflectance.z = 1. - glossmap;
     EncodedNormal_Specular_Reflectance.w = reflectance;
     EmitMap = emitval;
 }

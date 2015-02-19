@@ -40,7 +40,7 @@ void main(void)
     color *= detail;
 
     EncodedNormal_Specular_Reflectance.xy = 0.5 * EncodeNormal(normalize(nor)) + 0.5;
-    EncodedNormal_Specular_Reflectance.z = glossmap;
+    EncodedNormal_Specular_Reflectance.z = 1. - glossmap;
     EncodedNormal_Specular_Reflectance.w = reflectance;
     Colors = vec4(color.rgb, 1.);
     EmitMap = emitval;

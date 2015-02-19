@@ -45,7 +45,7 @@ void main()
 
     vec3 FragmentNormal = TS_normal.x * Frag_tangent + TS_normal.y * Frag_bitangent - TS_normal.z * Frag_normal;
     EncodedNormal_Specular_Reflectance.xy = 0.5 * EncodeNormal(normalize(FragmentNormal)) + 0.5;
-    EncodedNormal_Specular_Reflectance.z = gloss;
+    EncodedNormal_Specular_Reflectance.z = 1. - gloss;
     EncodedNormal_Specular_Reflectance.w = reflectance;
     Colors = vec4(col.rgb, 1.);
     EmitMap = emitval;

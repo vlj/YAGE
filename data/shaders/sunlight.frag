@@ -34,6 +34,7 @@ void main() {
 		outcol *= cloud;
 	}*/
 
-
-    FragColor = vec4(NdotL * sun_col * mix(DiffuseBRDF(norm, eyedir, Lightdir, color, roughness), SpecularBRDF(norm, eyedir, Lightdir, color, roughness), reflectance), 0.);
+    vec3 Diffuse = DiffuseBRDF(norm, eyedir, Lightdir, color, roughness);
+    vec3 Specular = SpecularBRDF(norm, eyedir, Lightdir, color, roughness);
+    FragColor = vec4(NdotL * sun_col * mix(Diffuse, Specular, reflectance), 0.);
 }

@@ -40,5 +40,8 @@ void main()
     vec3 color = texture(ctex, texc).rgb;
     float reflectance = texture(ntex, texc).a;
 
-    FragColor = vec4(NdotL * light_col * att * mix(DiffuseBRDF(norm, eyedir, L, color, roughness), SpecularBRDF(norm, eyedir, L, color, roughness), reflectance), 1.);
+    vec3 Diffuse = DiffuseBRDF(norm, eyedir, L, color, roughness);
+    vec3 Specular = SpecularBRDF(norm, eyedir, L, color, roughness);
+
+    FragColor = vec4(NdotL * light_col * att *mix(Diffuse, Specular, reflectance), 1.);
 }
