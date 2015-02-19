@@ -7,6 +7,7 @@
 #include <Core/SColor.h>
 #include <Maths/vector3d.h>
 #include "gl_headers.hpp"
+#include <functional>
 
 bool needsUBO();
 
@@ -43,22 +44,13 @@ void printFileList(GLint ShaderType, const char *filepath, Types ... args)
     printFileList(args...);
 }
 
-enum AttributeType
-{
-    OBJECT,
-    PARTICLES_SIM,
-    PARTICLES_RENDERING,
-};
-
-void setAttribute(AttributeType Tp, GLuint ProgramID);
-
 template<typename ... Types>
-GLint LoadProgram(AttributeType Tp, Types ... args)
+GLint LoadProgram(std::function<void (GLuint)> AttributeSetter, Types ... args)
 {
     GLint ProgramID = glCreateProgram();
     loadAndAttach(ProgramID, args...);
     if (getGLSLVersion() < 330)
-        setAttribute(Tp, ProgramID);
+        AttributeSetter(ProgramID);
     glLinkProgram(ProgramID);
 
     GLint Result = GL_FALSE;

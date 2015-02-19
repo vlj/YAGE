@@ -54,7 +54,6 @@ public:
 };
 }
 
-
 namespace MeshShader
 {
 class ObjectShader : public ShaderHelperSingleton<ObjectShader, core::matrix4, core::matrix4, core::matrix4>, public TextureRead<Trilinear_Anisotropic_Filtered, Trilinear_Anisotropic_Filtered>

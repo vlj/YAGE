@@ -198,48 +198,21 @@ GLuint LoadShader(const char * file, unsigned type)
     return Id;
 }
 
-void setAttribute(AttributeType Tp, GLuint ProgramID)
-{
-    switch (Tp)
-    {
-    case OBJECT:
-        glBindAttribLocation(ProgramID, 0, "Position");
-        glBindAttribLocation(ProgramID, 1, "Normal");
-        glBindAttribLocation(ProgramID, 2, "Color");
-        glBindAttribLocation(ProgramID, 3, "Texcoord");
-        glBindAttribLocation(ProgramID, 4, "SecondTexcoord");
-        glBindAttribLocation(ProgramID, 5, "Tangent");
-        glBindAttribLocation(ProgramID, 6, "Bitangent");
-        glBindAttribLocation(ProgramID, 7, "Origin");
-        glBindAttribLocation(ProgramID, 8, "Orientation");
-        glBindAttribLocation(ProgramID, 9, "Scale");
-        break;
-    case PARTICLES_SIM:
-        glBindAttribLocation(ProgramID, 0, "particle_position");
-        glBindAttribLocation(ProgramID, 1, "lifetime");
-        glBindAttribLocation(ProgramID, 2, "particle_velocity");
-        glBindAttribLocation(ProgramID, 3, "size");
-        glBindAttribLocation(ProgramID, 4, "particle_position_initial");
-        glBindAttribLocation(ProgramID, 5, "lifetime_initial");
-        glBindAttribLocation(ProgramID, 6, "particle_velocity_initial");
-        glBindAttribLocation(ProgramID, 7, "size_initial");
-        break;
-    case PARTICLES_RENDERING:
-        glBindAttribLocation(ProgramID, 1, "lifetime");
-        glBindAttribLocation(ProgramID, 2, "size");
-        glBindAttribLocation(ProgramID, 4, "quadcorner");
-        glBindAttribLocation(ProgramID, 5, "rotationvec");
-        glBindAttribLocation(ProgramID, 6, "anglespeed");
-        break;
-    }
-}
-
 GLuint LoadTFBProgram(const char * vertex_file_path, const char **varyings, unsigned varyingscount)
 {
     GLuint Program = glCreateProgram();
     loadAndAttach(Program, GL_VERTEX_SHADER, vertex_file_path);
     if (CVS->getGLSLVersion() < 330)
-        setAttribute(PARTICLES_SIM, Program);
+    {
+        glBindAttribLocation(Program, 0, "particle_position");
+        glBindAttribLocation(Program, 1, "lifetime");
+        glBindAttribLocation(Program, 2, "particle_velocity");
+        glBindAttribLocation(Program, 3, "size");
+        glBindAttribLocation(Program, 4, "particle_position_initial");
+        glBindAttribLocation(Program, 5, "lifetime_initial");
+        glBindAttribLocation(Program, 6, "particle_velocity_initial");
+        glBindAttribLocation(Program, 7, "size_initial");
+    }
     glTransformFeedbackVaryings(Program, varyingscount, varyings, GL_INTERLEAVED_ATTRIBS);
     glLinkProgram(Program);
 
@@ -553,11 +526,36 @@ void bypassUBO(GLuint Program)
     glUniform1f(sunangle, 0.54f);
 }
 
+static void setObjectAttribute(GLuint ProgramID)
+{
+
+        glBindAttribLocation(ProgramID, 0, "Position");
+        glBindAttribLocation(ProgramID, 1, "Normal");
+        glBindAttribLocation(ProgramID, 2, "Color");
+        glBindAttribLocation(ProgramID, 3, "Texcoord");
+        glBindAttribLocation(ProgramID, 4, "SecondTexcoord");
+        glBindAttribLocation(ProgramID, 5, "Tangent");
+        glBindAttribLocation(ProgramID, 6, "Bitangent");
+        glBindAttribLocation(ProgramID, 7, "Origin");
+        glBindAttribLocation(ProgramID, 8, "Orientation");
+        glBindAttribLocation(ProgramID, 9, "Scale");
+}
+
+static void setParticleAttribute(GLuint ProgramID)
+{
+        glBindAttribLocation(ProgramID, 1, "lifetime");
+        glBindAttribLocation(ProgramID, 2, "size");
+        glBindAttribLocation(ProgramID, 4, "quadcorner");
+        glBindAttribLocation(ProgramID, 5, "rotationvec");
+        glBindAttribLocation(ProgramID, 6, "anglespeed");
+}
+
+
 namespace UtilShader
 {
     ColoredLine::ColoredLine()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/object_pass.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/coloredquad.frag").c_str());
 
@@ -886,7 +884,7 @@ namespace UtilShader
 {
     SpecularIBLGenerator::SpecularIBLGenerator()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/importance_sampling_specular.frag").c_str());
         AssignUniforms("PermutationMatrix", "ViewportSize");
@@ -901,7 +899,7 @@ namespace MeshShader
     // Solid Normal and depth pass shaders
     ObjectShader::ObjectShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/object_pass.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/encode_normal.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/object.frag").c_str());
@@ -911,7 +909,7 @@ namespace MeshShader
 
     SkinnedObjectShader::SkinnedObjectShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/skinning.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/encode_normal.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/object.frag").c_str());
@@ -921,7 +919,7 @@ namespace MeshShader
 
     InstancedObjectShader::InstancedObjectShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/utils/getworldmatrix.vert").c_str(),
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/instanced_object_pass.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/encode_normal.frag").c_str(),
@@ -933,7 +931,7 @@ namespace MeshShader
 
     ObjectRefShader::ObjectRefShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/object_pass.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/encode_normal.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/objectref.frag").c_str());
@@ -943,7 +941,7 @@ namespace MeshShader
 
     SkinnedRefObjectShader::SkinnedRefObjectShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/skinning.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/encode_normal.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/objectref.frag").c_str());
@@ -953,7 +951,7 @@ namespace MeshShader
 
     InstancedObjectRefShader::InstancedObjectRefShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/utils/getworldmatrix.vert").c_str(),
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/instanced_object_pass.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/encode_normal.frag").c_str(),
@@ -965,7 +963,7 @@ namespace MeshShader
 
     GrassShader::GrassShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/grass_pass.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/encode_normal.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/objectref.frag").c_str());
@@ -975,7 +973,7 @@ namespace MeshShader
 
     InstancedGrassShader::InstancedGrassShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/utils/getworldmatrix.vert").c_str(),
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/instanced_grass.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/encode_normal.frag").c_str(),
@@ -986,7 +984,7 @@ namespace MeshShader
 
     NormalMapShader::NormalMapShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/object_pass.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/encode_normal.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/normalmap.frag").c_str());
@@ -996,7 +994,7 @@ namespace MeshShader
 
     InstancedNormalMapShader::InstancedNormalMapShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/utils/getworldmatrix.vert").c_str(),
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/instanced_object_pass.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/encode_normal.frag").c_str(),
@@ -1007,7 +1005,7 @@ namespace MeshShader
 
     DetailledObjectShader::DetailledObjectShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/object_pass.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/encode_normal.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/detailledobject.frag").c_str());
@@ -1017,7 +1015,7 @@ namespace MeshShader
 
     InstancedDetailledObjectShader::InstancedDetailledObjectShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/utils/getworldmatrix.vert").c_str(),
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/instanced_object_pass.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/encode_normal.frag").c_str(),
@@ -1028,7 +1026,7 @@ namespace MeshShader
 
     ObjectUnlitShader::ObjectUnlitShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/object_pass.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/object_unlit.frag").c_str());
         AssignUniforms("ModelMatrix", "TextureMatrix");
@@ -1037,7 +1035,7 @@ namespace MeshShader
 
     InstancedObjectUnlitShader::InstancedObjectUnlitShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/utils/getworldmatrix.vert").c_str(),
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/instanced_object_pass.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/instanced_object_unlit.frag").c_str());
@@ -1047,7 +1045,7 @@ namespace MeshShader
 
     SplattingShader::SplattingShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/object_pass.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/encode_normal.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/splatting.frag").c_str());
@@ -1064,7 +1062,7 @@ namespace MeshShader
 
     TransparentShader::TransparentShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/object_pass.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/transparent.frag").c_str());
         AssignUniforms("ModelMatrix", "TextureMatrix");
@@ -1073,7 +1071,7 @@ namespace MeshShader
 
     TransparentFogShader::TransparentFogShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/object_pass.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/transparentfog.frag").c_str());
         AssignUniforms("ModelMatrix", "TextureMatrix", "fogmax", "startH", "endH", "start", "end", "col");
@@ -1082,7 +1080,7 @@ namespace MeshShader
 
     BillboardShader::BillboardShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/billboard.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/billboard.frag").c_str());
 
@@ -1092,7 +1090,7 @@ namespace MeshShader
 
     ColorizeShader::ColorizeShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/object_pass.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/colorize.frag").c_str());
         AssignUniforms("ModelMatrix", "col");
@@ -1100,7 +1098,7 @@ namespace MeshShader
 
     InstancedColorizeShader::InstancedColorizeShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/utils/getworldmatrix.vert").c_str(),
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/glow_object.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/glow_object.frag").c_str());
@@ -1114,13 +1112,13 @@ namespace MeshShader
             return;
         if (CVS->isAMDVertexShaderLayerUsable())
         {
-            Program = LoadProgram(OBJECT,
+            Program = LoadProgram(setObjectAttribute,
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/shadow.vert").c_str(),
                 GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/shadow.frag").c_str());
         }
         else
         {
-            Program = LoadProgram(OBJECT,
+            Program = LoadProgram(setObjectAttribute,
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/shadow.vert").c_str(),
                 GL_GEOMETRY_SHADER, file_manager->getAsset("shaders/shadow.geom").c_str(),
                 GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/shadow.frag").c_str());
@@ -1135,13 +1133,13 @@ namespace MeshShader
             return;
         if (CVS->isAMDVertexShaderLayerUsable())
         {
-            Program = LoadProgram(OBJECT,
+            Program = LoadProgram(setObjectAttribute,
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/shadow_skinning.vert").c_str(),
                 GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/shadow.frag").c_str());
         }
         else
         {
-            Program = LoadProgram(OBJECT,
+            Program = LoadProgram(setObjectAttribute,
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/shadow_skinning.vert").c_str(),
                 GL_GEOMETRY_SHADER, file_manager->getAsset("shaders/shadow.geom").c_str(),
                 GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/shadow.frag").c_str());
@@ -1151,7 +1149,7 @@ namespace MeshShader
 
     RSMShader::RSMShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/rsm.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/rsm.frag").c_str());
 
@@ -1161,7 +1159,7 @@ namespace MeshShader
 
     InstancedRSMShader::InstancedRSMShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/utils/getworldmatrix.vert").c_str(),
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/instanced_rsm.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/instanced_rsm.frag").c_str());
@@ -1172,7 +1170,7 @@ namespace MeshShader
 
     SplattingRSMShader::SplattingRSMShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/rsm.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/splatting_rsm.frag").c_str());
 
@@ -1187,14 +1185,14 @@ namespace MeshShader
             return;
         if (CVS->isAMDVertexShaderLayerUsable())
         {
-            Program = LoadProgram(OBJECT,
+            Program = LoadProgram(setObjectAttribute,
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/utils/getworldmatrix.vert").c_str(),
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/instanciedshadow.vert").c_str(),
                 GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/shadow.frag").c_str());
         }
         else
         {
-            Program = LoadProgram(OBJECT,
+            Program = LoadProgram(setObjectAttribute,
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/utils/getworldmatrix.vert").c_str(),
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/instanciedshadow.vert").c_str(),
                 GL_GEOMETRY_SHADER, file_manager->getAsset("shaders/instanced_shadow.geom").c_str(),
@@ -1210,13 +1208,13 @@ namespace MeshShader
             return;
         if (CVS->isAMDVertexShaderLayerUsable())
         {
-            Program = LoadProgram(OBJECT,
+            Program = LoadProgram(setObjectAttribute,
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/shadow.vert").c_str(),
                 GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/shadowref.frag").c_str());
         }
         else
         {
-            Program = LoadProgram(OBJECT,
+            Program = LoadProgram(setObjectAttribute,
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/shadow.vert").c_str(),
                 GL_GEOMETRY_SHADER, file_manager->getAsset("shaders/shadow.geom").c_str(),
                 GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/shadowref.frag").c_str());
@@ -1232,13 +1230,13 @@ namespace MeshShader
             return;
         if (CVS->isAMDVertexShaderLayerUsable())
         {
-            Program = LoadProgram(OBJECT,
+            Program = LoadProgram(setObjectAttribute,
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/shadow_skinning.vert").c_str(),
                 GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/shadowref.frag").c_str());
         }
         else
         {
-            Program = LoadProgram(OBJECT,
+            Program = LoadProgram(setObjectAttribute,
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/shadow_skinning.vert").c_str(),
                 GL_GEOMETRY_SHADER, file_manager->getAsset("shaders/shadow.geom").c_str(),
                 GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/shadowref.frag").c_str());
@@ -1254,14 +1252,14 @@ namespace MeshShader
             return;
         if (CVS->isAMDVertexShaderLayerUsable())
         {
-            Program = LoadProgram(OBJECT,
+            Program = LoadProgram(setObjectAttribute,
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/utils/getworldmatrix.vert").c_str(),
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/instanciedshadow.vert").c_str(),
                 GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/instanced_shadowref.frag").c_str());
         }
         else
         {
-            Program = LoadProgram(OBJECT,
+            Program = LoadProgram(setObjectAttribute,
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/utils/getworldmatrix.vert").c_str(),
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/instanciedshadow.vert").c_str(),
                 GL_GEOMETRY_SHADER, file_manager->getAsset("shaders/instanced_shadow.geom").c_str(),
@@ -1278,13 +1276,13 @@ namespace MeshShader
             return;
         if (CVS->isAMDVertexShaderLayerUsable())
         {
-            Program = LoadProgram(OBJECT,
+            Program = LoadProgram(setObjectAttribute,
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/shadow_grass.vert").c_str(),
                 GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/instanced_shadowref.frag").c_str());
         }
         else
         {
-            Program = LoadProgram(OBJECT,
+            Program = LoadProgram(setObjectAttribute,
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/shadow_grass.vert").c_str(),
                 GL_GEOMETRY_SHADER, file_manager->getAsset("shaders/shadow.geom").c_str(),
                 GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/instanced_shadowref.frag").c_str());
@@ -1300,14 +1298,14 @@ namespace MeshShader
             return;
         if (CVS->isAMDVertexShaderLayerUsable())
         {
-            Program = LoadProgram(OBJECT,
+            Program = LoadProgram(setObjectAttribute,
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/utils/getworldmatrix.vert").c_str(),
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/instanciedgrassshadow.vert").c_str(),
                 GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/instanced_shadowref.frag").c_str());
         }
         else
         {
-            Program = LoadProgram(OBJECT,
+            Program = LoadProgram(setObjectAttribute,
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/utils/getworldmatrix.vert").c_str(),
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/instanciedgrassshadow.vert").c_str(),
                 GL_GEOMETRY_SHADER, file_manager->getAsset("shaders/instanced_shadow.geom").c_str(),
@@ -1320,7 +1318,7 @@ namespace MeshShader
 
     DisplaceMaskShader::DisplaceMaskShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/displace.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/white.frag").c_str());
         AssignUniforms("ModelMatrix");
@@ -1329,7 +1327,7 @@ namespace MeshShader
 
     DisplaceShader::DisplaceShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/displace.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/displace.frag").c_str());
         AssignUniforms("ModelMatrix", "dir", "dir2");
@@ -1343,7 +1341,7 @@ namespace MeshShader
 
     SkyboxShader::SkyboxShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/sky.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/sky.frag").c_str());
         AssignUniforms();
@@ -1359,7 +1357,7 @@ namespace MeshShader
 
     NormalVisualizer::NormalVisualizer()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/utils/getworldmatrix.vert").c_str(),
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/instanced_object_pass.vert").c_str(),
             GL_GEOMETRY_SHADER, file_manager->getAsset("shaders/normal_visualizer.geom").c_str(),
@@ -1369,7 +1367,7 @@ namespace MeshShader
 
     ViewFrustrumShader::ViewFrustrumShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/frustrum.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/coloredquad.frag").c_str());
 
@@ -1389,7 +1387,7 @@ namespace LightShader
 {
     PointLightShader::PointLightShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/pointlight.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/decodeNormal.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/SpecularBRDF.frag").c_str(),
@@ -1429,7 +1427,7 @@ namespace LightShader
 
     PointLightScatterShader::PointLightScatterShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/pointlight.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/getPosFromUVDepth.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/pointlightscatter.frag").c_str());
@@ -1494,7 +1492,7 @@ namespace ParticleShader
 
     SimpleParticleRender::SimpleParticleRender()
     {
-        Program = LoadProgram(PARTICLES_RENDERING,
+        Program = LoadProgram(setParticleAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/particle.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/getPosFromUVDepth.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/particle.frag").c_str());
@@ -1505,7 +1503,7 @@ namespace ParticleShader
 
     FlipParticleRender::FlipParticleRender()
     {
-        Program = LoadProgram(PARTICLES_RENDERING,
+        Program = LoadProgram(setParticleAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/flipparticle.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/getPosFromUVDepth.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/particle.frag").c_str());
@@ -1535,7 +1533,7 @@ namespace FullScreenShader
 {
     BloomShader::BloomShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/getCIEXYZ.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/getRGBfromCIEXxy.frag").c_str(),
@@ -1547,7 +1545,7 @@ namespace FullScreenShader
 
     BloomBlendShader::BloomBlendShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/bloomblend.frag").c_str());
         AssignUniforms();
@@ -1557,7 +1555,7 @@ namespace FullScreenShader
 	
 	LensBlendShader::LensBlendShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/lensblend.frag").c_str());
         AssignUniforms();
@@ -1567,7 +1565,7 @@ namespace FullScreenShader
 
     ToneMapShader::ToneMapShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/getRGBfromCIEXxy.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/getCIEXYZ.frag").c_str(),
@@ -1579,7 +1577,7 @@ namespace FullScreenShader
 
     DepthOfFieldShader::DepthOfFieldShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/dof.frag").c_str());
 
@@ -1589,7 +1587,7 @@ namespace FullScreenShader
 
     SunLightShader::SunLightShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/decodeNormal.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/SpecularBRDF.frag").c_str(),
@@ -1604,7 +1602,7 @@ namespace FullScreenShader
 
     IBLShader::IBLShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/decodeNormal.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/getPosFromUVDepth.frag").c_str(),
@@ -1617,7 +1615,7 @@ namespace FullScreenShader
 
     ShadowedSunLightShaderPCF::ShadowedSunLightShaderPCF()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/decodeNormal.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/SpecularBRDF.frag").c_str(),
@@ -1633,7 +1631,7 @@ namespace FullScreenShader
 
     ShadowedSunLightShaderESM::ShadowedSunLightShaderESM()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/decodeNormal.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/SpecularBRDF.frag").c_str(),
@@ -1650,7 +1648,7 @@ namespace FullScreenShader
 
     BacklitShadowedSunLightShader::BacklitShadowedSunLightShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/decodeNormal.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/SpecularBRDF.frag").c_str(),
@@ -1668,13 +1666,13 @@ namespace FullScreenShader
     {
         if (CVS->isAMDVertexShaderLayerUsable())
         {
-            Program = LoadProgram(OBJECT,
+            Program = LoadProgram(setObjectAttribute,
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/slicedscreenquad.vert").c_str(),
                 GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/rh.frag").c_str());
         }
         else
         {
-            Program = LoadProgram(OBJECT,
+            Program = LoadProgram(setObjectAttribute,
                 GL_VERTEX_SHADER, file_manager->getAsset("shaders/slicedscreenquad.vert").c_str(),
                 GL_GEOMETRY_SHADER, file_manager->getAsset("shaders/rhpassthrough.geom").c_str(),
                 GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/rh.frag").c_str());
@@ -1686,7 +1684,7 @@ namespace FullScreenShader
 
     NVWorkaroundRadianceHintsConstructionShader::NVWorkaroundRadianceHintsConstructionShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/slicedscreenquad_nvworkaround.vert").c_str(),
             GL_GEOMETRY_SHADER, file_manager->getAsset("shaders/rhpassthrough.geom").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/rh.frag").c_str());
@@ -1698,7 +1696,7 @@ namespace FullScreenShader
 
     RHDebug::RHDebug()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/rhdebug.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/rhdebug.frag").c_str());
         AssignUniforms("RHMatrix", "extents");
@@ -1710,7 +1708,7 @@ namespace FullScreenShader
 
     GlobalIlluminationReconstructionShader::GlobalIlluminationReconstructionShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/decodeNormal.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/getPosFromUVDepth.frag").c_str(),
@@ -1722,7 +1720,7 @@ namespace FullScreenShader
 
     Gaussian17TapHShader::Gaussian17TapHShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/bilateralH.frag").c_str());
         AssignUniforms("pixel");
@@ -1731,7 +1729,7 @@ namespace FullScreenShader
 
     ComputeGaussian17TapHShader::ComputeGaussian17TapHShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_COMPUTE_SHADER, file_manager->getAsset("shaders/bilateralH.comp").c_str());
         TU_dest = 2;
         AssignUniforms("pixel");
@@ -1741,7 +1739,7 @@ namespace FullScreenShader
 
     ComputeGaussian6HBlurShader::ComputeGaussian6HBlurShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_COMPUTE_SHADER, file_manager->getAsset("shaders/gaussian6h.comp").c_str());
         TU_dest = 1;
         AssignUniforms("pixel", "weights");
@@ -1751,7 +1749,7 @@ namespace FullScreenShader
 
     ComputeShadowBlurHShader::ComputeShadowBlurHShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_COMPUTE_SHADER, file_manager->getAsset("shaders/blurshadowH.comp").c_str());
         TU_dest = 1;
         AssignUniforms("pixel", "weights");
@@ -1761,7 +1759,7 @@ namespace FullScreenShader
 
     Gaussian6HBlurShader::Gaussian6HBlurShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/gaussian6h.frag").c_str());
         AssignUniforms("pixel", "sigma");
@@ -1771,7 +1769,7 @@ namespace FullScreenShader
 	
 	HorizontalBlurShader::HorizontalBlurShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/gaussian6h.frag").c_str());
         AssignUniforms("pixel");
@@ -1781,7 +1779,7 @@ namespace FullScreenShader
 
     Gaussian3HBlurShader::Gaussian3HBlurShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/gaussian3h.frag").c_str());
         AssignUniforms("pixel");
@@ -1791,7 +1789,7 @@ namespace FullScreenShader
 
     Gaussian17TapVShader::Gaussian17TapVShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/bilateralV.frag").c_str());
         AssignUniforms("pixel");
@@ -1801,7 +1799,7 @@ namespace FullScreenShader
 
     ComputeGaussian17TapVShader::ComputeGaussian17TapVShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_COMPUTE_SHADER, file_manager->getAsset("shaders/bilateralV.comp").c_str());
         TU_dest = 2;
         AssignUniforms("pixel");
@@ -1811,7 +1809,7 @@ namespace FullScreenShader
 
     ComputeGaussian6VBlurShader::ComputeGaussian6VBlurShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_COMPUTE_SHADER, file_manager->getAsset("shaders/gaussian6v.comp").c_str());
         TU_dest = 1;
         AssignUniforms("pixel", "weights");
@@ -1821,7 +1819,7 @@ namespace FullScreenShader
 
     ComputeShadowBlurVShader::ComputeShadowBlurVShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_COMPUTE_SHADER, file_manager->getAsset("shaders/blurshadowV.comp").c_str());
         TU_dest = 1;
         AssignUniforms("pixel", "weights");
@@ -1831,7 +1829,7 @@ namespace FullScreenShader
 
     Gaussian6VBlurShader::Gaussian6VBlurShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/gaussian6v.frag").c_str());
         AssignUniforms("pixel", "sigma");
@@ -1841,7 +1839,7 @@ namespace FullScreenShader
 
     Gaussian3VBlurShader::Gaussian3VBlurShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/gaussian3v.frag").c_str());
         AssignUniforms("pixel");
@@ -1851,7 +1849,7 @@ namespace FullScreenShader
 
     PassThroughShader::PassThroughShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/texturedquad.frag").c_str());
 
@@ -1862,7 +1860,7 @@ namespace FullScreenShader
 
     ApplySSAOShader::ApplySSAOShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/apply_ssao.frag").c_str());
 
@@ -1872,7 +1870,7 @@ namespace FullScreenShader
 
     LayerPassThroughShader::LayerPassThroughShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/layertexturequad.frag").c_str());
         TU_texture = 0;
@@ -1883,7 +1881,7 @@ namespace FullScreenShader
 
     LinearizeDepthShader::LinearizeDepthShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/linearizedepth.frag").c_str());
         AssignUniforms("zn", "zf");
@@ -1894,7 +1892,7 @@ namespace FullScreenShader
 
     LightspaceBoundingBoxShader::LightspaceBoundingBoxShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_COMPUTE_SHADER, file_manager->getAsset("shaders/Lightspaceboundingbox.comp").c_str(),
             GL_COMPUTE_SHADER, file_manager->getAsset("shaders/utils/getPosFromUVDepth.frag").c_str());
         AssignSamplerNames(Program, 0, "depth");
@@ -1905,7 +1903,7 @@ namespace FullScreenShader
 
     DepthHistogramShader::DepthHistogramShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_COMPUTE_SHADER, file_manager->getAsset("shaders/depthhistogram.comp").c_str(),
             GL_COMPUTE_SHADER, file_manager->getAsset("shaders/utils/getPosFromUVDepth.frag").c_str());
         AssignSamplerNames(Program, 0, "depth");
@@ -1916,7 +1914,7 @@ namespace FullScreenShader
 
     GlowShader::GlowShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/glow.frag").c_str());
         AssignUniforms();
@@ -1927,7 +1925,7 @@ namespace FullScreenShader
 
     SSAOShader::SSAOShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/decodeNormal.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/getPosFromUVDepth.frag").c_str(),
@@ -1939,7 +1937,7 @@ namespace FullScreenShader
 
     FogShader::FogShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/getPosFromUVDepth.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/fog.frag").c_str());
@@ -1950,7 +1948,7 @@ namespace FullScreenShader
 
     MotionBlurShader::MotionBlurShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/utils/getPosFromUVDepth.frag").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/motion_blur.frag").c_str());
@@ -1960,7 +1958,7 @@ namespace FullScreenShader
 
     GodFadeShader::GodFadeShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/godfade.frag").c_str());
         AssignUniforms("col");
@@ -1971,7 +1969,7 @@ namespace FullScreenShader
 
     GodRayShader::GodRayShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/godray.frag").c_str());
 
@@ -1982,7 +1980,7 @@ namespace FullScreenShader
 
     MLAAColorEdgeDetectionSHader::MLAAColorEdgeDetectionSHader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/mlaa_offset.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/mlaa_color1.frag").c_str());
         AssignUniforms("PIXEL_SIZE");
@@ -1993,7 +1991,7 @@ namespace FullScreenShader
 
     MLAABlendWeightSHader::MLAABlendWeightSHader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/screenquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/mlaa_blend2.frag").c_str());
         AssignUniforms("PIXEL_SIZE");
@@ -2004,7 +2002,7 @@ namespace FullScreenShader
 
     MLAAGatherSHader::MLAAGatherSHader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/mlaa_offset.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/mlaa_neigh3.frag").c_str());
         AssignUniforms("PIXEL_SIZE");
@@ -2019,7 +2017,7 @@ namespace UIShader
 
     Primitive2DList::Primitive2DList()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/primitive2dlist.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/primitive2dlist.frag").c_str());
         AssignUniforms();
@@ -2028,7 +2026,7 @@ namespace UIShader
 
     TextureRectShader::TextureRectShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/texturedquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/texturedquad.frag").c_str());
         AssignUniforms("center", "size", "texcenter", "texsize");
@@ -2038,7 +2036,7 @@ namespace UIShader
 
     UniformColoredTextureRectShader::UniformColoredTextureRectShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/texturedquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/uniformcolortexturedquad.frag").c_str());
 
@@ -2049,7 +2047,7 @@ namespace UIShader
 
     ColoredTextureRectShader::ColoredTextureRectShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/colortexturedquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/colortexturedquad.frag").c_str());
         AssignUniforms("center", "size", "texcenter", "texsize");
@@ -2079,7 +2077,7 @@ namespace UIShader
 
     ColoredRectShader::ColoredRectShader()
     {
-        Program = LoadProgram(OBJECT,
+        Program = LoadProgram(setObjectAttribute,
             GL_VERTEX_SHADER, file_manager->getAsset("shaders/coloredquad.vert").c_str(),
             GL_FRAGMENT_SHADER, file_manager->getAsset("shaders/coloredquad.frag").c_str());
         AssignUniforms("center", "size", "color");
