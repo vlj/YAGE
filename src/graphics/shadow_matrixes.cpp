@@ -368,7 +368,7 @@ void IrrDriver::computeMatrixesAndCameras(scene::ICameraSceneNode * const camnod
         // Shadow Matrixes and cameras
         for (unsigned i = 0; i < 4; i++)
         {
-            core::matrix4 orthogonalProjectionEnclosingMatrix, TrueProjectionMatrix;
+            core::matrix4 orthogonalProjectionEnclosingMatrix;
             float h, v;
             if (!CVS->isSDSMEnabled())
             {
@@ -381,16 +381,6 @@ void IrrDriver::computeMatrixesAndCameras(scene::ICameraSceneNode * const camnod
 
                 std::vector<vector3df> vectors = getFrustrumVertex(*(camnode->getViewFrustum()));
                 orthogonalProjectionEnclosingMatrix = getTighestFitOrthoProj(SunCamViewMatrix, vectors, h, v);
-                if (CVS->isESMEnabled())
-                {
-                    TrueProjectionMatrix = orthogonalProjectionEnclosingMatrix;
-                }
-                else
-                {
-                    const core::matrix4 &LiSPM = getLightSpacePerspectiveMatrix(*camnode, LightVector);
-                    SunCamViewMatrix.getInverse(TrueProjectionMatrix);
-                    TrueProjectionMatrix = LiSPM * TrueProjectionMatrix;
-                }
             }
             else
             {
@@ -409,10 +399,9 @@ void IrrDriver::computeMatrixesAndCameras(scene::ICameraSceneNode * const camnod
                     h = right - left;
                     v = down - up;
                 }
-                TrueProjectionMatrix = orthogonalProjectionEnclosingMatrix;
             }
             getCurrentView().setCascadeRelativeScale(h, v, i);
-            getCurrentView().addCascadeCamera(m_suncam, orthogonalProjectionEnclosingMatrix, TrueProjectionMatrix);
+            getCurrentView().addCascadeCamera(m_suncam, orthogonalProjectionEnclosingMatrix, orthogonalProjectionEnclosingMatrix);
         }
 
         // Rsm Matrix and camera
