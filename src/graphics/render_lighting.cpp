@@ -221,16 +221,10 @@ void IrrDriver::renderLights(unsigned pointlightcount, bool hasShadow)
             glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 
             glStencilFunc(GL_EQUAL, 0, 0xFF);
-            if (CVS->isESMEnabled())
-            {
-                FullScreenShader::ShadowedSunLightShaderESM::getInstance()->SetTextureUnits(irr_driver->getRenderTargetTexture(RTT_NORMAL_AND_DEPTH), irr_driver->getDepthStencilTexture(), irr_driver->getRenderTargetTexture(RTT_BASE_COLOR), m_rtts->getShadowFBO().getRTT()[0]);
-                DrawFullScreenEffect<FullScreenShader::ShadowedSunLightShaderESM>(shadowSplit[1], shadowSplit[2], shadowSplit[3], shadowSplit[4]);
-            }
-            else
-            {
-                FullScreenShader::ShadowedSunLightShaderPCF::getInstance()->SetTextureUnits(irr_driver->getRenderTargetTexture(RTT_NORMAL_AND_DEPTH), irr_driver->getDepthStencilTexture(), irr_driver->getRenderTargetTexture(RTT_BASE_COLOR), m_rtts->getShadowFBO().getDepthTexture());
-                DrawFullScreenEffect<FullScreenShader::ShadowedSunLightShaderPCF>(shadowSplit[1], shadowSplit[2], shadowSplit[3], shadowSplit[4], UserConfigParams::m_shadows_resolution);
-            }
+
+            FullScreenShader::ShadowedSunLightShaderPCF::getInstance()->SetTextureUnits(irr_driver->getRenderTargetTexture(RTT_NORMAL_AND_DEPTH), irr_driver->getDepthStencilTexture(), irr_driver->getRenderTargetTexture(RTT_BASE_COLOR), m_rtts->getShadowFBO().getDepthTexture());
+            DrawFullScreenEffect<FullScreenShader::ShadowedSunLightShaderPCF>(shadowSplit[1], shadowSplit[2], shadowSplit[3], shadowSplit[4], UserConfigParams::m_shadows_resolution);
+
             glStencilFunc(GL_EQUAL, 1, 0xFF);
 
             FullScreenShader::BacklitShadowedSunLightShader::getInstance()->SetTextureUnits(irr_driver->getRenderTargetTexture(RTT_NORMAL_AND_DEPTH), irr_driver->getDepthStencilTexture(), irr_driver->getRenderTargetTexture(RTT_BASE_COLOR), m_rtts->getShadowFBO().getRTT()[0]);
