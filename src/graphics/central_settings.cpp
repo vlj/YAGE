@@ -299,7 +299,7 @@ bool CentralVideoSettings::isTextureCompressionEnabled() const
 // See http://visual-computing.intel-research.net/art/publications/sdsm/
 bool CentralVideoSettings::isSDSMEnabled() const
 {
-    return isShadowEnabled() && isARBShaderAtomicCountersUsable() && isARBShaderStorageBufferObjectUsable() && isARBComputeShaderUsable() && isARBImageLoadStoreUsable() && UserConfigParams::m_sdsm;
+    return isShadowEnabled() && isARBShaderAtomicCountersUsable() && isARBComputeShaderUsable() && isARBImageLoadStoreUsable() && UserConfigParams::m_sdsm;
 }
 
 // See http://fr.slideshare.net/CassEveritt/approaching-zero-driver-overhead

@@ -567,6 +567,12 @@ public:
     LightspaceBoundingBoxShader();
 };
 
+class ShadowMatrixesGenerationShader : public ShaderHelperSingleton <ShadowMatrixesGenerationShader, core::matrix4>
+{
+public:
+    ShadowMatrixesGenerationShader();
+};
+
 class DepthHistogramShader : public ShaderHelperSingleton<DepthHistogramShader>, public TextureRead <Nearest_Filtered>
 {
 public:
