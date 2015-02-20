@@ -189,7 +189,11 @@ public:
     static void bind();
 };
 
-// Array_buffer for vertex data or instances
+/** Wrapper around opengl buffer. It strongly types underlying data
+*  and automatically makes the buffer persistent if buffer storage is available.
+*  /tparam Data is the base type of the array
+*  /tparam BufferType is the buffer target (used in bindBuffer)
+*/
 template<typename Data, GLenum BufferType>
 class ArrayBuffer
 {
@@ -290,8 +294,6 @@ public:
     }
 };
 
-
-
 template<typename VT>
 struct InstanceAttribBinder
 {
@@ -299,6 +301,10 @@ public:
     static void bind();
 };
 
+/** Set of buffers describing a formatted (ie with bound attributes) vertex storage.
+*  /tparam S3DVertexFormat is the vertex type
+*  /tparam AppendedData is used for vertex "annotation" in companion buffer (like skinning weight)
+*/
 template <typename S3DVertexFormat, typename ...AppendedData>
 class FormattedVertexStorage : public std::tuple<ArrayBuffer<S3DVertexFormat, GL_ARRAY_BUFFER>, ArrayBuffer<AppendedData, GL_ARRAY_BUFFER>...>
 {
@@ -441,7 +447,12 @@ public:
     }
 };
 
-
+/** Linear storage for all meshes with the same vertex format.
+*  Should be used for "static" (ie with immutable triangle count) mesh.
+*  Individual mesh can't be removed, the whole buffer need to be discarded.
+*  The instance buffer are automatically rebound if necessary.
+*  /tparam VBO is FormattedVertex type used for all mesh
+*/
 template<typename VBO>
 class VertexArrayObject : public Singleton<VertexArrayObject<VBO> >
 {
@@ -453,19 +464,10 @@ private:
     void append(irr::scene::IMeshBuffer *mb, VertexAnnotation *...SkinnedData)
     {
         size_t old_vtx_cnt = vbo.getSize();
-//        vbo.resizeBufferIfNecessary(old_vtx_cnt + mb->getVertexCount());
         size_t old_idx_cnt = ibo.getSize();
 
-//            glBindBuffer(GL_ARRAY_BUFFER, vbo.getBuffer(0));
-//            glBufferSubData(GL_ARRAY_BUFFER, old_vtx_cnt * VBO::getSizeOfData(), mb->getVertexCount() * VBO::getSizeOfData(), mb->getVertices());
         vbo.append(mb->getVertexCount(), mb->getVertices(), SkinnedData...);
         ibo.append(mb->getIndexCount(), mb->getIndices());
-
-/*        if (SkinnedData)
-        {
-            glBindBuffer(GL_ARRAY_BUFFER, vbo.getBuffer(1));
-            glBufferSubData(GL_ARRAY_BUFFER, old_vtx_cnt * 4 * 2 * sizeof(float), mb->getVertexCount() * 4 * 2 * sizeof(float), SkinnedData);
-        }*/
 
         mappedBaseVertexBaseIndex[mb] = std::make_pair(old_vtx_cnt, old_idx_cnt * sizeof(irr::u16));
     }
@@ -565,6 +567,7 @@ public:
     }
 };
 
+// Old single manager, acts as a router until port is done
 class VAOManager : public Singleton<VAOManager>
 {
     enum VTXTYPE { VTXTYPE_STANDARD, VTXTYPE_TCOORD, VTXTYPE_TANGENT, VTXTYPE_COUNT };
