@@ -6,6 +6,7 @@
 #include "graphics/central_settings.hpp"
 #include "graphics/irr_driver.hpp"
 #include "graphics/shaders.hpp"
+#include "graphics/shared_object.hpp"
 #include "modes/world.hpp"
 #include "physics/triangle_mesh.hpp"
 #include "tracks/track.hpp"

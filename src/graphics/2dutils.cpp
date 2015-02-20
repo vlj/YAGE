@@ -2,6 +2,7 @@
 #include "central_settings.hpp"
 #include "glwrap.hpp"
 #include "utils/cpp2011.hpp"
+#include "graphics/shared_object.hpp"
 
 #include "../../lib/irrlicht/source/Irrlicht/COpenGLTexture.h"
 

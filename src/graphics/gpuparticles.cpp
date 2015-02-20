@@ -8,6 +8,7 @@
 #include "guiengine/engine.hpp"
 #include "graphics/particle_emitter.hpp"
 #include "../../lib/irrlicht/source/Irrlicht/os.h"
+#include "graphics/shared_object.hpp"
 #define COMPONENTCOUNT 8
 
 scene::IParticleSystemSceneNode *ParticleSystemProxy::addParticleNode(

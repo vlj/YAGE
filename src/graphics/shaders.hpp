@@ -26,16 +26,6 @@
 using namespace irr;
 class ParticleSystemProxy;
 
-class SharedObject
-{
-public:
-    static GLuint billboardvbo;
-    static GLuint skytrivbo, frustrumvbo, frustrumindexes, ParticleQuadVBO;
-    static GLuint ViewProjectionMatrixesUBO, LightingDataUBO;
-    static GLuint FullScreenQuadVAO;
-    static GLuint UIVAO;
-};
-
 namespace UtilShader
 {
 class ColoredLine : public ShaderHelperSingleton<ColoredLine, video::SColor>

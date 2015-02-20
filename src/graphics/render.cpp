@@ -28,6 +28,7 @@
 #include "graphics/rtts.hpp"
 #include "graphics/screenquad.hpp"
 #include "graphics/shaders.hpp"
+#include "graphics/shared_object.hpp"
 #include "graphics/stkmeshscenenode.hpp"
 #include "items/item_manager.hpp"
 #include "modes/world.hpp"

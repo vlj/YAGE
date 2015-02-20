@@ -1,6 +1,7 @@
 #include "IBL.hpp"
 #include "gl_headers.hpp"
 #include "shaders.hpp"
+#include "shared_object.hpp"
 #include <Core/S3DVertex.h>
 #include <cmath>
 #include <set>

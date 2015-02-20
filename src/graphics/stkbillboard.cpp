@@ -1,6 +1,7 @@
 #include "graphics/stkbillboard.hpp"
 #include "graphics/glwrap.hpp"
 #include "graphics/shaders.hpp"
+#include "graphics/shared_object.hpp"
 #include "graphics/irr_driver.hpp"
 #include <Core/ISceneManager.h>
 

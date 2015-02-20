@@ -6,6 +6,7 @@
 #include "graphics/post_processing.hpp"
 #include "graphics/rtts.hpp"
 #include "graphics/shaders.hpp"
+#include "graphics/shared_object.hpp"
 #include "modes/world.hpp"
 #include "tracks/track.hpp"
 #include "utils/profiler.hpp"

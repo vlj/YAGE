@@ -25,6 +25,7 @@
 #include "graphics/irr_driver.hpp"
 #include "graphics/mlaa_areamap.hpp"
 #include "graphics/shaders.hpp"
+#include "graphics/shared_object.hpp"
 #include "graphics/stkmeshscenenode.hpp"
 #include "io/file_manager.hpp"
 #include "karts/abstract_kart.hpp"
