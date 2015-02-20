@@ -21,6 +21,7 @@
 #include "config/user_config.hpp"
 #include "graphics/callbacks.hpp"
 #include "central_settings.hpp"
+#include "graphics/fbo.hpp"
 #include "graphics/glwrap.hpp"
 #include "graphics/lod_node.hpp"
 #include "graphics/post_processing.hpp"

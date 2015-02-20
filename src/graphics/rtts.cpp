@@ -15,12 +15,13 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-#include "graphics/rtts.hpp"
+
 #include "central_settings.hpp"
 #include "config/user_config.hpp"
-#include "graphics/glwrap.hpp"
+#include "graphics/fbo.hpp"
 #include "graphics/irr_driver.hpp"
 #include "graphics/post_processing.hpp"
+#include "graphics/rtts.hpp"
 #include "utils/log.hpp"
 #include <Core/ISceneManager.h>
 
@@ -48,7 +49,7 @@ static GLuint generateRTT(const core::dimension2du &res, GLint internalFormat, G
     return result;
 }
 
-RTT::RTT(size_t width, size_t height)
+RTT::RTT(unsigned width, unsigned height)
 {
     m_width = width;
     m_height = height;

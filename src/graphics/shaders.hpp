@@ -22,6 +22,7 @@
 #include "config/user_config.hpp"
 
 #include "shaders_util.hpp"
+#include "shared_object.hpp"
 
 using namespace irr;
 class ParticleSystemProxy;

@@ -32,7 +32,7 @@
 #include "io/file_manager.hpp"
 #include "states_screens/state_manager.hpp"
 #include "utils/log.hpp"
-#include "graphics/glwrap.hpp"
+#include "graphics/fbo.hpp"
 
 using namespace GUIEngine;
 using namespace irr;

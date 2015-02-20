@@ -2,6 +2,7 @@
 #include "central_settings.hpp"
 #include "config/user_config.hpp"
 #include "graphics/callbacks.hpp"
+#include "graphics/fbo.hpp"
 #include "graphics/glwrap.hpp"
 #include "graphics/post_processing.hpp"
 #include "graphics/rtts.hpp"
