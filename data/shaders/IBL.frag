@@ -23,9 +23,9 @@ void main(void)
     vec3 eyedir = -normalize(xpos.xyz);
     float specval = texture(ntex, uv).z;
 
-    vec3 diffuse = DiffuseIBL(normal, eyedir, specval, color);
-    vec3 specular = SpecularIBL(normal, eyedir, specval, color);
-    float reflectance = texture(ntex, uv).a;
+    vec3 Dielectric = DiffuseIBL(normal, eyedir, specval, color) + SpecularIBL(normal, eyedir, specval, vec3(.04));
+    vec3 Metal = SpecularIBL(normal, eyedir, specval, color);
+    float Metalness = texture(ntex, uv).a;
 
-    FragColor = vec4(.2 * mix(diffuse, specular, reflectance) + emitcolor, texture(ctex, uv).a);
+    FragColor = vec4(.2 * mix(Dielectric, Metal, Metalness) + emitcolor, texture(ctex, uv).a);
 }

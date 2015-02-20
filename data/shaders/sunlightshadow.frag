@@ -51,7 +51,7 @@ void main() {
     float NdotL = clamp(dot(norm, Lightdir), 0., 1.);
     vec3 color = texture(ctex, uv).rgb;
 
-    float reflectance = texture(ntex, uv).a;
+    float metalness = texture(ntex, uv).a;
 
     // Shadows
     float factor;
@@ -66,7 +66,7 @@ void main() {
     else
         factor = 1.;
 
-    vec3 Diffuse = DiffuseBRDF(norm, eyedir, Lightdir, color, roughness);
-    vec3 Specular = SpecularBRDF(norm, eyedir, Lightdir, color, roughness);
-    FragColor = vec4(factor * NdotL * sun_col * mix(Diffuse, Specular, reflectance), 0.);
+    vec3 Dielectric = DiffuseBRDF(norm, eyedir, Lightdir, color, roughness);
+    vec3 Metalness = SpecularBRDF(norm, eyedir, Lightdir, color, roughness);
+    FragColor = vec4(factor * NdotL * sun_col * mix(Dielectric, Metalness, metalness), 0.);
 }
