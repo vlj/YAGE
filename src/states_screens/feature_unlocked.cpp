@@ -253,7 +253,7 @@ void FeatureUnlockedCutScene::addUnlockedPicture(irr::video::ITexture* picture,
     {
         Log::warn("FeatureUnlockedCutScene::addUnlockedPicture", "Unlockable has no picture: %s",
             core::stringc(msg.c_str()).c_str());
-        picture = irr_driver->getTexture(file_manager->getAsset(FileManager::GUI,"main_help.png"));
+        picture = irr_driver->getTexture(file_manager->getAsset(FileManager::GUI, "main_help.png"), false, false, false);
 
     }
 
@@ -526,7 +526,7 @@ void FeatureUnlockedCutScene::addUnlockedTrack(const Track* track)
 
     const std::string sshot = track->getScreenshotFile();
     core::stringw trackname = track->getName();
-    addUnlockedPicture( irr_driver->getTexture(sshot.c_str()), 4.0f, 3.0f,
+    addUnlockedPicture(irr_driver->getTexture(sshot.c_str(), false, false, false), 4.0f, 3.0f,
         _("You unlocked track %0", trackname));
 }
 
@@ -539,7 +539,7 @@ void FeatureUnlockedCutScene::addUnlockedGP(const GrandPrixData* gp)
     if (gp == NULL)
     {
         Log::error("FeatureUnlockedCutScene::addUnlockedGP", "Unlocked GP does not exist");
-        video::ITexture* WTF_image = irr_driver->getTexture( file_manager->getAsset(FileManager::GUI,"main_help.png"));
+        video::ITexture* WTF_image = irr_driver->getTexture(file_manager->getAsset(FileManager::GUI, "main_help.png"), false, false, false);
         images.push_back(WTF_image);
     }
     else
@@ -550,7 +550,7 @@ void FeatureUnlockedCutScene::addUnlockedGP(const GrandPrixData* gp)
         if (track_amount == 0)
         {
             Log::error("FeatureUnlockedCutScene::addUnlockedGP", "Unlocked GP is empty");
-            video::ITexture* WTF_image = irr_driver->getTexture( file_manager->getAsset(FileManager::GUI,"main_help.png"));
+            video::ITexture* WTF_image = irr_driver->getTexture(file_manager->getAsset(FileManager::GUI, "main_help.png"), false, false, false);
             images.push_back(WTF_image);
         }
 
@@ -559,7 +559,7 @@ void FeatureUnlockedCutScene::addUnlockedGP(const GrandPrixData* gp)
             Track* track = track_manager->getTrack(gptracks[t]);
 
             ITexture* tex = irr_driver->getTexture(track  ?  track->getScreenshotFile().c_str()
-                                                          : file_manager->getAsset(FileManager::GUI,"main_help.png"));
+                : file_manager->getAsset(FileManager::GUI, "main_help.png"), false, false, false);
             images.push_back(tex);
         }
         gpname = gp->getName();

@@ -781,7 +781,7 @@ void IrrDriver::applyResolutionSettings()
     input_manager->setMode(InputManager::MENU);
 
     GUIEngine::addLoadingIcon(
-        irr_driver->getTexture(file_manager->getAsset(FileManager::GUI,"options_video.png"))
+        irr_driver->getTexture(file_manager->getAsset(FileManager::GUI,"options_video.png"), false, false, false)
                              );
 
     file_manager->pushTextureSearchPath(file_manager->getAsset(FileManager::MODEL,""));
@@ -797,7 +797,7 @@ void IrrDriver::applyResolutionSettings()
     projectile_manager->loadData();
     Referee::init();
     GUIEngine::addLoadingIcon(
-        irr_driver->getTexture(file_manager->getAsset(FileManager::GUI,"gift.png")) );
+        irr_driver->getTexture(file_manager->getAsset(FileManager::GUI,"gift.png"), false, false, false) );
 
     file_manager->popTextureSearchPath();
 
@@ -805,7 +805,7 @@ void IrrDriver::applyResolutionSettings()
 
     attachment_manager->loadModels();
     std::string banana = file_manager->getAsset(FileManager::GUI, "banana.png");
-    GUIEngine::addLoadingIcon(irr_driver->getTexture(banana) );
+    GUIEngine::addLoadingIcon(irr_driver->getTexture(banana, false, false, false));
     // No need to reload cached track data (track_manager->cleanAllCachedData
     // above) - this happens dynamically when the tracks are loaded.
     GUIEngine::reshowCurrentScreen();
@@ -1430,28 +1430,6 @@ std::string IrrDriver::getSmallerTexture(const std::string& filename)
 } // getSmallerTexture
 
 // ----------------------------------------------------------------------------
-/** Loads a texture from a file and returns the texture object. This is just
- *  a convenient wrapper which loads the texture from a STK asset directory.
- *  It calls the file manager to get the full path, then calls the normal
- *  getTexture() function.s
- *  \param type The FileManager::AssetType of the texture.
- *  \param filename File name of the texture to load.
- *  \param is_premul If the alpha values needd to be multiplied for
- *         all pixels.
- *  \param is_prediv If the alpha value needs to be divided into
- *         each pixel.
- */
-video::ITexture *IrrDriver::getTexture(FileManager::AssetType type,
-                                       const std::string &filename,
-                                       bool is_premul,
-                                       bool is_prediv,
-                                       bool complain_if_not_found)
-{
-    const std::string path = file_manager->getAsset(type, filename);
-    return getTexture(path, is_premul, is_prediv, complain_if_not_found);
-}   // getTexture
-
-// ----------------------------------------------------------------------------
 /** Loads a texture from a file and returns the texture object.
  *  \param filename File name of the texture to load.
  *  \param is_premul If the alpha values needd to be multiplied for
@@ -1460,79 +1438,17 @@ video::ITexture *IrrDriver::getTexture(FileManager::AssetType type,
  *         each pixel.
  */
 video::ITexture *IrrDriver::getTexture(const std::string &filename,
-                                       bool is_premul,
-                                       bool is_prediv,
+                                       bool is_srgb,
+                                       bool is_compressable,
+                                       bool premul_by_alpha,
                                        bool complain_if_not_found)
 {
-    video::ITexture* out;
-    if(!is_premul && !is_prediv)
-    {
-        if (!complain_if_not_found) m_device->getLogger()->setLogLevel(ELL_NONE);
-        out = m_video_driver->getTexture(filename.c_str());
-        if (!complain_if_not_found) m_device->getLogger()->setLogLevel(ELL_WARNING);
-    }
-    else
-    {
-        // FIXME: can't we just do this externally, and just use the
-        // modified textures??
-        video::IImage* img =
-            m_video_driver->createImageFromFile(filename.c_str());
-        // PNGs are non premul, but some are used for premul tasks, so convert
-        // http://home.comcast.net/~tom_forsyth/blog.wiki.html#[[Premultiplied%20alpha]]
-        // FIXME check param, not name
-        if(img && is_premul &&
-            StringUtils::hasSuffix(filename.c_str(), ".png") &&
-            (img->getColorFormat() == video::ECF_A8R8G8B8) &&
-            img->lock())
-        {
-            core::dimension2d<u32> dim = img->getDimension();
-            for(unsigned int x = 0; x < dim.Width; x++)
-            {
-                for(unsigned int y = 0; y < dim.Height; y++)
-                {
-                    video::SColor col = img->getPixel(x, y);
-                    unsigned int alpha = col.getAlpha();
-                    unsigned int red   = alpha * col.getRed()   / 255;
-                    unsigned int blue  = alpha * col.getBlue()  / 255;
-                    unsigned int green = alpha * col.getGreen() / 255;
-                    col.set(alpha, red, green, blue);
-                    img->setPixel(x, y, col, false);
-                }   // for y
-            }   // for x
-            img->unlock();
-        }   // if png and ColorFOrmat and lock
-        // Other formats can be premul, but the tasks can be non premul
-        // So divide to get the separate RGBA (only possible if alpha!=0)
-        else if(img && is_prediv &&
-            (img->getColorFormat() == video::ECF_A8R8G8B8) &&
-            img->lock())
-        {
-            core::dimension2d<u32> dim = img->getDimension();
-            for(unsigned int  x = 0; x < dim.Width; x++)
-            {
-                for(unsigned int y = 0; y < dim.Height; y++)
-                {
-                    video::SColor col = img->getPixel(x, y);
-                    unsigned int alpha = col.getAlpha();
-                    // Avoid divide by zero
-                    if (alpha) {
-                        unsigned int red   = 255 * col.getRed() / alpha ;
-                        unsigned int blue  = 255 * col.getBlue() / alpha;
-                        unsigned int green = 255 * col.getGreen() / alpha;
-                        col.set(alpha, red, green, blue);
-                        img->setPixel(x, y, col, false);
-                    }
-                }   // for y
-            }   // for x
-            img->unlock();
-        }   // if premul && color format && lock
-        out = m_video_driver->addTexture(filename.c_str(), img, NULL);
-    }   // if is_premul or is_prediv
+    if (!complain_if_not_found) m_device->getLogger()->setLogLevel(ELL_NONE);
+    video::ITexture *out = m_video_driver->getTexture(filename.c_str());
+    if (!complain_if_not_found) m_device->getLogger()->setLogLevel(ELL_WARNING);
 
-
-    if (complain_if_not_found && out == NULL)
+    if (complain_if_not_found && out == nullptr)
     {
-
         if(m_texture_error_message.size()>0)
         {
             Log::error("irr_driver", m_texture_error_message.c_str());

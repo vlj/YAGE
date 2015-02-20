@@ -72,17 +72,17 @@ AddonsScreen::AddonsScreen() : Screen("addons_screen.stkgui")
 void AddonsScreen::loadedFromFile()
 {
     video::ITexture* icon1 = irr_driver->getTexture( file_manager->getAsset(FileManager::GUI,
-                                                     "package.png"         ));
+                                                     "package.png"         ), false, false, false);
     video::ITexture* icon2 = irr_driver->getTexture( file_manager->getAsset(FileManager::GUI,
-                                                     "no-package.png"      ));
+                                                     "no-package.png"      ), false, false, false);
     video::ITexture* icon3 = irr_driver->getTexture( file_manager->getAsset(FileManager::GUI,
-                                                     "package-update.png"  ));
+                                                     "package-update.png"  ), false, false, false);
     video::ITexture* icon4 = irr_driver->getTexture( file_manager->getAsset(FileManager::GUI,
-                                                     "package-featured.png"));
+                                                     "package-featured.png"), false, false, false);
     video::ITexture* icon5 = irr_driver->getTexture( file_manager->getAsset(FileManager::GUI,
-                                                  "no-package-featured.png"));
+                                                  "no-package-featured.png"), false, false, false);
     video::ITexture* icon6 = irr_driver->getTexture( file_manager->getAsset(FileManager::GUI,
-                                                     "loading.png"));
+                                                     "loading.png"), false, false, false);
 
     m_icon_bank = new irr::gui::STKModifiedSpriteBank( GUIEngine::getGUIEnv());
     m_icon_installed     = m_icon_bank->addTextureAsSprite(icon1);

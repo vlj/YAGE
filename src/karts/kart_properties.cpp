@@ -243,7 +243,7 @@ void KartProperties::load(const std::string &filename, const std::string &node)
                                                     /*complain_if_not_found*/true,
                                                     /*strip_path*/false);
     if(m_minimap_icon_file!="")
-        m_minimap_icon = irr_driver->getTexture(m_root+m_minimap_icon_file);
+        m_minimap_icon = irr_driver->getTexture(m_root+m_minimap_icon_file, false, false, false);
     else
         m_minimap_icon = NULL;
 
@@ -290,7 +290,7 @@ void KartProperties::load(const std::string &filename, const std::string &node)
                             sin(m_wheel_base/m_turn_angle_at_speed.getY(i)) );
     }
 
-    m_shadow_texture = irr_driver->getTexture(m_shadow_file);
+    m_shadow_texture = irr_driver->getTexture(m_shadow_file, false, false, false);
 
     irr_driver->unsetTextureErrorMessage();
     file_manager->popTextureSearchPath();

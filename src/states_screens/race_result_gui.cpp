@@ -1286,7 +1286,7 @@ void RaceResultGUI::displayHighScores()
             if (prop != NULL)
             {
                 const std::string &icon_path = prop->getAbsoluteIconFile();
-                video::ITexture* kart_icon_texture = irr_driver->getTexture( icon_path );
+                video::ITexture* kart_icon_texture = irr_driver->getTexture(icon_path, false, false, false);
 
                 if (kart_icon_texture != NULL)
                 {

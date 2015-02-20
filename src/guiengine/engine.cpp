@@ -1290,7 +1290,7 @@ namespace GUIEngine
         g_skin->drawBgImage();
         ITexture* loading =
             irr_driver->getTexture(file_manager->getAsset(FileManager::GUI,
-                                                          "loading.png"));
+                                                          "loading.png"), false, false, false);
 
         if(!loading)
         {

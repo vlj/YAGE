@@ -236,11 +236,11 @@ void EditGPScreen::loadList(const int selected)
         Track* t = track_manager->getTrack(m_gp->getTrackId(i));
         assert(t != NULL);
 
-        video::ITexture* screenShot = irr_driver->getTexture(t->getScreenshotFile());
+        video::ITexture* screenShot = irr_driver->getTexture(t->getScreenshotFile(), false, false, false);
         if (screenShot == NULL)
         {
             screenShot = irr_driver->getTexture(
-                file_manager->getAsset(FileManager::GUI, "main_help.png"));
+                file_manager->getAsset(FileManager::GUI, "main_help.png"), false, false, false);
         }
         assert (screenShot != NULL);
         m_icons.push_back(m_icon_bank->addTextureAsSprite(screenShot));

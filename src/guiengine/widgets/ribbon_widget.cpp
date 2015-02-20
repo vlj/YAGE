@@ -238,7 +238,7 @@ void RibbonWidget::add()
                 icon->setScaleImage(true);
                 std::string filename = file_manager->getAsset(
                                      m_active_children[i].m_properties[PROP_ICON]);
-                icon->setImage( irr_driver->getTexture(filename.c_str()) );
+                icon->setImage( irr_driver->getTexture(filename.c_str(), false, false, false) );
                 icon->setUseAlphaChannel(true);
                 icon->setDrawBorder(false);
                 icon->setTabStop(false);
@@ -302,11 +302,11 @@ void RibbonWidget::add()
             std::string filename =
                 file_manager->getAsset(m_active_children[i].m_properties[PROP_ICON]);
             video::ITexture* image =
-                irr_driver->getTexture((filename).c_str());
+                irr_driver->getTexture((filename).c_str(), false, false, false);
             if(!image)
             {
                 std::string file = file_manager->getAsset(FileManager::GUI,"main_help.png");
-                image = irr_driver->getTexture(file);
+                image = irr_driver->getTexture(file, false, false, false);
                 if(!image)
                     Log::fatal("RibbonWidget",
                         "Can't find fallback texture 'gui/main_help.png, aborting.");

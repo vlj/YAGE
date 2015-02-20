@@ -167,7 +167,7 @@ void KartPropertiesManager::loadAllKarts(bool loading_icon)
             {
                 GUIEngine::addLoadingIcon(irr_driver->getTexture(
                     m_karts_properties[m_karts_properties.size()-1]
-                            .getAbsoluteIconFile()              )
+                            .getAbsoluteIconFile(), false, false, false)
                                           );
             }
         }   // for all files in the currently handled directory

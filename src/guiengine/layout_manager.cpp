@@ -153,7 +153,7 @@ void LayoutManager::readCoords(Widget* self)
     {
         // PROP_ICON includes paths (e.g. gui/logo.png)
         ITexture* texture = irr_driver->getTexture(file_manager->getAsset(
-                                                    self->m_properties[PROP_ICON]));
+                                                    self->m_properties[PROP_ICON]), false, false, false);
 
         if (texture != NULL)
         {

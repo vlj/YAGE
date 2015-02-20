@@ -211,7 +211,7 @@ bool TrackManager::loadTrack(const std::string& dirname)
     // Populate the texture cache with track screenshots
     // (internal tracks like end cutscene don't have screenshots)
     if (!track->isInternal())
-        irr_driver->getTexture(track->getScreenshotFile());
+        irr_driver->getTexture(track->getScreenshotFile(), false, false, false);
 
     return true;
 }   // loadTrack

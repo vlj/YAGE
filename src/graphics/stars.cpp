@@ -37,7 +37,7 @@ Stars::Stars(scene::ISceneNode* parentKart, core::vector3df center)
     m_parent_kart_node = parentKart;
     m_enabled = false;
 
-    video::ITexture* texture = irr_driver->getTexture("starparticle.png");
+    video::ITexture* texture = irr_driver->getTexture("starparticle.png", true, true, true);
     Material* star_material =
         material_manager->getMaterial("starparticle.png");
 

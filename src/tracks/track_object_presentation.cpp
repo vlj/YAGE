@@ -632,7 +632,7 @@ TrackObjectPresentationBillboard::TrackObjectPresentationBillboard(const XMLNode
     }
 
     video::ITexture* texture =
-        irr_driver->getTexture(file_manager->searchTexture(texture_name));
+        irr_driver->getTexture(file_manager->searchTexture(texture_name), false, false, false);
     if (texture == NULL)
     {
         Log::warn("TrackObjectPresentation", "Billboard texture '%s' not found", texture_name.c_str());

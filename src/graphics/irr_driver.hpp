@@ -275,15 +275,32 @@ public:
     void                  setAmbientLight(const video::SColorf &light);
     std::string           generateSmallerTextures(const std::string& dir);
     std::string           getSmallerTexture(const std::string& texture);
-    video::ITexture      *getTexture(FileManager::AssetType type,
-                                     const std::string &filename,
-                                     bool is_premul=false,
-                                     bool is_prediv=false,
-                                     bool complain_if_not_found=true);
     video::ITexture      *getTexture(const std::string &filename,
-                                     bool is_premul=false,
-                                     bool is_prediv=false,
+                                     bool is_srgb,
+                                     bool is_compressable,
+                                     bool premul_by_alpha,
                                      bool complain_if_not_found=true);
+    // ----------------------------------------------------------------------------
+    /** Loads a texture from a file and returns the texture object. This is just
+    *  a convenient wrapper which loads the texture from a STK asset directory.
+    *  It calls the file manager to get the full path, then calls the normal
+    *  getTexture() function.s
+    *  \param type The FileManager::AssetType of the texture.
+    *  \param filename File name of the texture to load.
+    *  \param is_premul If the alpha values needd to be multiplied for
+    *         all pixels.
+    *  \param is_prediv If the alpha value needs to be divided into
+    *         each pixel.
+    */
+    video::ITexture *getTexture(FileManager::AssetType type,
+        const std::string &filename,
+        bool is_premul = false,
+        bool is_prediv = false,
+        bool complain_if_not_found = true)
+    {
+        const std::string path = file_manager->getAsset(type, filename);
+        return getTexture(path, is_premul, is_prediv, complain_if_not_found);
+    }   // getTexture
     void                  clearTexturesFileName();
     std::string           getTextureName(video::ITexture* tex);
     void                  grabAllTextures(const scene::IMesh *mesh);
@@ -367,7 +384,7 @@ public:
                                 const std::string &detail="")
     {
         setTextureErrorMessage(error_message, detail);
-        video::ITexture *tex = getTexture(filename);
+        video::ITexture *tex = getTexture(filename, false, false, false);
         unsetTextureErrorMessage();
         return tex;
     }   // getTexture

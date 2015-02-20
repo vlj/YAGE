@@ -1336,7 +1336,7 @@ bool Track::loadMainTrack(const XMLNode &root)
                         }
 
                         std::string sshot = t->getScreenshotFile();
-                        video::ITexture* screenshot = irr_driver->getTexture(sshot);
+                        video::ITexture* screenshot = irr_driver->getTexture(sshot, false, false, false);
 
                         if (screenshot == NULL)
                         {
@@ -2123,7 +2123,7 @@ void Track::handleSky(const XMLNode &xml_node, const std::string &filename)
         m_sky_texture_percent = 1.0f;
         std::string s;
         xml_node.get("texture",          &s                   );
-        video::ITexture *t = irr_driver->getTexture(s);
+        video::ITexture *t = irr_driver->getTexture(s, false, false, false);
         if (t != NULL)
         {
             t->grab();
@@ -2148,7 +2148,7 @@ void Track::handleSky(const XMLNode &xml_node, const std::string &filename)
         std::vector<std::string> v = StringUtils::split(s, ' ');
         for(unsigned int i=0; i<v.size(); i++)
         {
-            video::ITexture *t = irr_driver->getTexture(v[i]);
+            video::ITexture *t = irr_driver->getTexture(v[i], false, false, false);
             if(t)
             {
                 t->grab();
@@ -2178,7 +2178,7 @@ void Track::handleSky(const XMLNode &xml_node, const std::string &filename)
         v = StringUtils::split(sh_textures, ' ');
         for (unsigned int i = 0; i<v.size(); i++)
         {
-            video::ITexture *t = irr_driver->getTexture(v[i]);
+            video::ITexture *t = irr_driver->getTexture(v[i], false, false, false);
             if (t)
             {
                 t->grab();

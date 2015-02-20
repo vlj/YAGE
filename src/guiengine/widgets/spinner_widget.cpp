@@ -190,7 +190,7 @@ ITexture* SpinnerWidget::getTexture()
     assert(m_graphical);
     std::string s = StringUtils::insertValues(m_properties[PROP_ICON], m_value);
     std::string imagefile = file_manager->searchTexture(s);
-    ITexture* texture = irr_driver->getTexture(imagefile);
+    ITexture* texture = irr_driver->getTexture(imagefile, false, false, false);
     return texture;
 }
 
@@ -332,7 +332,7 @@ void SpinnerWidget::setValue(const int new_value)
     {
         std::string s = StringUtils::insertValues(m_properties[PROP_ICON], m_value);
         std::string imagefile = file_manager->searchTexture(s);
-        ((IGUIImage*)(m_children[1].m_element))->setImage(irr_driver->getTexture(imagefile));
+        ((IGUIImage*)(m_children[1].m_element))->setImage(irr_driver->getTexture(imagefile, false, false, false));
     }
     else if (m_labels.size() > 0 && m_children.size() > 0 && !m_deactivated)
     {

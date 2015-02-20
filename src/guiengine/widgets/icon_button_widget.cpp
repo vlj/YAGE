@@ -64,7 +64,7 @@ void IconButtonWidget::add()
     {
         if (m_icon_path_type == ICON_PATH_TYPE_ABSOLUTE)
         {
-            setTexture(irr_driver->getTexture(m_properties[PROP_ICON]));
+            setTexture(irr_driver->getTexture(m_properties[PROP_ICON], false, false, false));
         }
         else if (m_icon_path_type == ICON_PATH_TYPE_RELATIVE)
         {
@@ -73,7 +73,7 @@ void IconButtonWidget::add()
             if(m_properties[PROP_ICON] != "")
             {
                 std::string file = file_manager->getAsset(m_properties[PROP_ICON]);
-                setTexture(irr_driver->getTexture(file));
+                setTexture(irr_driver->getTexture(file, false, false, false));
             }
         }
     }
@@ -84,7 +84,7 @@ void IconButtonWidget::add()
                     "add() : error, cannot find texture '%s'.",
                    m_properties[PROP_ICON].c_str());
         std::string file = file_manager->getAsset(FileManager::GUI,"main_help.png");
-        setTexture(irr_driver->getTexture(file));
+        setTexture(irr_driver->getTexture(file, false, false, false));
         if(!m_texture)
             Log::fatal("IconButtonWidget",
                   "Can't find fallback texture 'gui/main_help.png, aborting.");
@@ -95,13 +95,13 @@ void IconButtonWidget::add()
         if (m_icon_path_type == ICON_PATH_TYPE_ABSOLUTE)
         {
             m_highlight_texture =
-                irr_driver->getTexture(m_properties[PROP_FOCUS_ICON]);
+                irr_driver->getTexture(m_properties[PROP_FOCUS_ICON], false, false, false);
         }
         else if (m_icon_path_type == ICON_PATH_TYPE_RELATIVE)
         {
             m_highlight_texture =
                 irr_driver->getTexture(file_manager->getAsset(
-                                       m_properties[PROP_FOCUS_ICON]));
+                                       m_properties[PROP_FOCUS_ICON]), false, false, false);
         }
 
     }
@@ -221,12 +221,12 @@ void IconButtonWidget::setImage(const char* path_to_texture, IconPathType pathTy
 
     if (m_icon_path_type == ICON_PATH_TYPE_ABSOLUTE)
     {
-        setTexture(irr_driver->getTexture(m_properties[PROP_ICON]));
+        setTexture(irr_driver->getTexture(m_properties[PROP_ICON], false, false, false));
     }
     else if (m_icon_path_type == ICON_PATH_TYPE_RELATIVE)
     {
         std::string file = file_manager->getAsset(m_properties[PROP_ICON]);
-        setTexture(irr_driver->getTexture(file));
+        setTexture(irr_driver->getTexture(file, false, false, false));
     }
 
     if (!m_texture)
@@ -234,7 +234,7 @@ void IconButtonWidget::setImage(const char* path_to_texture, IconPathType pathTy
         Log::error("icon_button", "Texture '%s' not found!\n",
                    m_properties[PROP_ICON].c_str());
         std::string file = file_manager->getAsset(FileManager::GUI,"main_help.png");
-        setTexture(irr_driver->getTexture(file));
+        setTexture(irr_driver->getTexture(file, false, false, false));
     }
 }
 
@@ -251,7 +251,7 @@ void IconButtonWidget::setImage(ITexture* texture)
         Log::error("icon_button",
                    "setImage invoked with NULL image pointer\n");
         std::string file = file_manager->getAsset(FileManager::GUI,"main_help.png");
-        setTexture(irr_driver->getTexture(file));
+        setTexture(irr_driver->getTexture(file, false, false, false));
     }
 }
 // -----------------------------------------------------------------------------

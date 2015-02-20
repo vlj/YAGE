@@ -241,7 +241,7 @@ void TrackInfoScreen::updateHighScores()
             if (prop != NULL)
             {
                 const std::string &icon_path = prop->getAbsoluteIconFile();
-                ITexture* kart_icon_texture = irr_driver->getTexture( icon_path );
+                ITexture* kart_icon_texture = irr_driver->getTexture(icon_path, false, false, false);
                 m_kart_icons[n]->setImage(kart_icon_texture);
             }
             line = name + "\t" + core::stringw(time_string.c_str());
@@ -253,7 +253,7 @@ void TrackInfoScreen::updateHighScores()
 
             ITexture* no_kart_texture = irr_driver->getTexture(
                                  file_manager->getAsset(FileManager::GUI,
-                                                        "random_kart.png") );
+                                 "random_kart.png"), false, false, false);
             m_kart_icons[n]->setImage(no_kart_texture);
 
         }

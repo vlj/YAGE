@@ -714,7 +714,7 @@ void  Material::setMaterialProperties(video::SMaterial *m, scene::IMeshBuffer* m
         ITexture *glossytex;
         if (m_gloss_map.size() > 0)
         {
-            glossytex = irr_driver->getTexture(m_gloss_map);
+            glossytex = irr_driver->getTexture(m_gloss_map, true, true, false);
         }
         else
         {
@@ -751,24 +751,24 @@ void  Material::setMaterialProperties(video::SMaterial *m, scene::IMeshBuffer* m
             m->setTexture(1, glossytex);
             return;
         case SHADERTYPE_SPLATTING:
-            tex = irr_driver->getTexture(m_splatting_texture_1);
+            tex = irr_driver->getTexture(m_splatting_texture_1, false, true, false);
             m->setTexture(2, tex);
 
             if (m_splatting_texture_2.size() > 0)
             {
-                tex = irr_driver->getTexture(m_splatting_texture_2);
+                tex = irr_driver->getTexture(m_splatting_texture_2, true, true, false);
             }
             m->setTexture(3, tex);
 
             if (m_splatting_texture_3.size() > 0)
             {
-                tex = irr_driver->getTexture(m_splatting_texture_3);
+                tex = irr_driver->getTexture(m_splatting_texture_3, true, true, false);
             }
             m->setTexture(4, tex);
 
             if (m_splatting_texture_4.size() > 0)
             {
-                tex = irr_driver->getTexture(m_splatting_texture_4);
+                tex = irr_driver->getTexture(m_splatting_texture_4, true, true, false);
             }
             m->setTexture(5, tex);
             m->setTexture(6, glossytex);
@@ -803,7 +803,7 @@ void  Material::setMaterialProperties(video::SMaterial *m, scene::IMeshBuffer* m
 
         if (m_normal_map_tex.size() > 0)
         {
-            tex = irr_driver->getTexture(m_normal_map_tex);
+            tex = irr_driver->getTexture(m_normal_map_tex, false, false, false);
             m->setTexture(2, tex);
 
             // Material and shaders
