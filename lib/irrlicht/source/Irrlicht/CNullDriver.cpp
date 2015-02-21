@@ -377,7 +377,7 @@ void CNullDriver::renameTexture(ITexture* texture, const io::path& newName)
 
 
 //! loads a Texture
-ITexture* CNullDriver::getTexture(const io::path& filename)
+ITexture* CNullDriver::getTexture(const io::path& filename, bool srgb, bool compresseable, bool premulalpha)
 {
 	// Identify textures by their absolute filenames if possible.
 	const io::path absolutePath = FileSystem->getAbsolutePath(filename);
@@ -410,7 +410,7 @@ ITexture* CNullDriver::getTexture(const io::path& filename)
 			return texture;
 		}
 
-		texture = loadTextureFromFile(file);
+        texture = loadTextureFromFile(file, srgb, compresseable, premulalpha);
 		file->drop();
 
 		if (texture)
@@ -431,7 +431,7 @@ ITexture* CNullDriver::getTexture(const io::path& filename)
 
 
 //! loads a Texture
-ITexture* CNullDriver::getTexture(io::IReadFile* file)
+ITexture* CNullDriver::getTexture(io::IReadFile* file, bool srgb, bool compresseable, bool premulalpha)
 {
 	ITexture* texture = 0;
 
@@ -442,7 +442,7 @@ ITexture* CNullDriver::getTexture(io::IReadFile* file)
 		if (texture)
 			return texture;
 
-		texture = loadTextureFromFile(file);
+        texture = loadTextureFromFile(file, srgb, compresseable, premulalpha);
 
 		if (texture)
 		{
@@ -459,7 +459,7 @@ ITexture* CNullDriver::getTexture(io::IReadFile* file)
 
 
 //! opens the file and loads it into the surface
-video::ITexture* CNullDriver::loadTextureFromFile(io::IReadFile* file, const io::path& hashName )
+video::ITexture* CNullDriver::loadTextureFromFile(io::IReadFile* file, bool srgb, bool compresseable, bool premulalpha, const io::path& hashName)
 {
 	ITexture* texture = 0;
 	IImage* image = createImageFromFile(file);
@@ -467,7 +467,7 @@ video::ITexture* CNullDriver::loadTextureFromFile(io::IReadFile* file, const io:
 	if (image)
 	{
 		// create texture from surface
-		texture = createDeviceDependentTexture(image, hashName.size() ? hashName : file->getFileName() );
+		texture = createDeviceDependentTexture(image, hashName.size() ? hashName : file->getFileName(), srgb, compresseable, premulalpha);
 		os::Printer::log("Loaded texture", file->getFileName());
 		image->drop();
 	}
@@ -513,12 +513,12 @@ video::ITexture* CNullDriver::findTexture(const io::path& filename)
 
 
 //! Creates a texture from a loaded IImage.
-ITexture* CNullDriver::addTexture(const io::path& name, IImage* image, void* mipmapData)
+ITexture* CNullDriver::addTexture(const io::path& name, IImage* image, bool srgb, bool compresseable, bool premulalpha, void* mipmapData)
 {
 	if ( 0 == name.size() || !image)
 		return 0;
 
-	ITexture* t = createDeviceDependentTexture(image, name, mipmapData);
+	ITexture* t = createDeviceDependentTexture(image, name, srgb, compresseable, premulalpha, mipmapData);
 	if (t)
 	{
 		addTexture(t);
@@ -530,7 +530,7 @@ ITexture* CNullDriver::addTexture(const io::path& name, IImage* image, void* mip
 
 //! creates a Texture
 ITexture* CNullDriver::addTexture(const core::dimension2d<u32>& size,
-				  const io::path& name, ECOLOR_FORMAT format)
+    const io::path& name, bool srgb, bool compresseable, bool premulalpha, ECOLOR_FORMAT format)
 {
 	if(IImage::isRenderTargetOnlyFormat(format))
 	{
@@ -542,7 +542,7 @@ ITexture* CNullDriver::addTexture(const core::dimension2d<u32>& size,
 		return 0;
 
 	IImage* image = new CImage(format, size);
-	ITexture* t = createDeviceDependentTexture(image, name);
+	ITexture* t = createDeviceDependentTexture(image, name, srgb, compresseable, premulalpha);
 	image->drop();
 	addTexture(t);
 
@@ -556,7 +556,7 @@ ITexture* CNullDriver::addTexture(const core::dimension2d<u32>& size,
 
 //! returns a device dependent texture from a software surface (IImage)
 //! THIS METHOD HAS TO BE OVERRIDDEN BY DERIVED DRIVERS WITH OWN TEXTURES
-ITexture* CNullDriver::createDeviceDependentTexture(IImage* surface, const io::path& name, void* mipmapData)
+ITexture* CNullDriver::createDeviceDependentTexture(IImage* surface, const io::path& name, bool srgb, bool compresseable, bool premulalpha, void* mipmapData)
 {
 	return new SDummyTexture(name);
 }

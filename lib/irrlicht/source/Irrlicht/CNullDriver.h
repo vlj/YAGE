@@ -83,10 +83,10 @@ namespace video
 		virtual void setMaterial(const SMaterial& material);
 
 		//! loads a Texture
-		virtual ITexture* getTexture(const io::path& filename);
+        virtual ITexture* getTexture(const io::path& filename, bool srgb, bool compresseable, bool premulalpha) OVERRIDE;
 
 		//! loads a Texture
-		virtual ITexture* getTexture(io::IReadFile* file);
+        virtual ITexture* getTexture(io::IReadFile* file, bool srgb, bool compresseable, bool premulalpha) OVERRIDE;
 
 		//! Returns a texture by index
 		virtual ITexture* getTextureByIndex(u32 index);
@@ -100,7 +100,7 @@ namespace video
 		virtual void renameTexture(ITexture* texture, const io::path& newName);
 
 		//! creates a Texture
-		virtual ITexture* addTexture(const core::dimension2d<u32>& size, const io::path& name, ECOLOR_FORMAT format = ECF_A8R8G8B8);
+        virtual ITexture* addTexture(const core::dimension2d<u32>& size, const io::path& name, bool srgb, bool compresseable, bool premulalpha, ECOLOR_FORMAT format = ECF_A8R8G8B8) OVERRIDE;
 
 		//! sets a render target
 		virtual bool setRenderTarget(video::ITexture* texture, bool clearBackBuffer,
@@ -670,17 +670,17 @@ namespace video
 		void deleteAllTextures();
 
 		//! opens the file and loads it into the surface
-		video::ITexture* loadTextureFromFile(io::IReadFile* file, const io::path& hashName = "");
+        video::ITexture* loadTextureFromFile(io::IReadFile* file, bool srgb, bool compresseable, bool premulalpha, const io::path& hashName = "");
 
 		//! adds a surface, not loaded or created by the Irrlicht Engine
 		void addTexture(video::ITexture* surface);
 
 		//! Creates a texture from a loaded IImage.
-		virtual ITexture* addTexture(const io::path& name, IImage* image, void* mipmapData=0);
+        virtual ITexture* addTexture(const io::path& name, IImage* image, bool srgb, bool compresseable, bool premulalpha, void* mipmapData = 0) OVERRIDE;
 
 		//! returns a device dependent texture from a software surface (IImage)
 		//! THIS METHOD HAS TO BE OVERRIDDEN BY DERIVED DRIVERS WITH OWN TEXTURES
-		virtual video::ITexture* createDeviceDependentTexture(IImage* surface, const io::path& name, void* mipmapData=0);
+        virtual video::ITexture* createDeviceDependentTexture(IImage* surface, const io::path& name, bool srgb, bool compresseable, bool premulalpha, void* mipmapData = 0);
 
 		//! checks triangle count and print warning if wrong
 		bool checkPrimitiveCount(u32 prmcnt) const;

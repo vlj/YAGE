@@ -124,6 +124,7 @@ void initGL()
 #ifdef ARB_DEBUG_OUTPUT
     if (glDebugMessageCallbackARB)
         glDebugMessageCallbackARB((GLDEBUGPROCARB)debugCallback, NULL);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 #endif
 }
 

@@ -2589,7 +2589,7 @@ inline void COpenGLDriver::getGLTextureMatrix(GLfloat *o, const core::matrix4& m
 
 
 //! returns a device dependent texture from a software surface (IImage)
-video::ITexture* COpenGLDriver::createDeviceDependentTexture(IImage* surface, const io::path& name, void* mipmapData)
+video::ITexture* COpenGLDriver::createDeviceDependentTexture(IImage* surface, const io::path& name, bool srgb, bool compresseable, bool premulalpha, void* mipmapData)
 {
 	return new COpenGLTexture(surface, name, mipmapData, this);
 }
@@ -4126,7 +4126,7 @@ ITexture* COpenGLDriver::addRenderTargetTexture(const core::dimension2d<u32>& si
 		// we try to find an optimal size with the original constraints
 		core::dimension2du destSize(core::min_(size.Width,ScreenSize.Width), core::min_(size.Height,ScreenSize.Height));
 		destSize = destSize.getOptimalSize((size==size.getOptimalSize()), false, false);
-		rtt = addTexture(destSize, name, ECF_A8R8G8B8);
+		rtt = addTexture(destSize, name, false, false, false, ECF_A8R8G8B8);
 		if (rtt)
 		{
 			static_cast<video::COpenGLTexture*>(rtt)->setIsRenderTarget(true);

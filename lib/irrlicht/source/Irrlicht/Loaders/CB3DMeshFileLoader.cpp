@@ -1052,13 +1052,13 @@ void CB3DMeshFileLoader::loadTextures(SB3dMaterial& material) const
 					texnameWithUserPath += B3dTexture->TextureName;
 				}
 				if (fs->existFile(texnameWithUserPath))
-					tex = SceneManager->getVideoDriver()->getTexture(texnameWithUserPath);
+					tex = SceneManager->getVideoDriver()->getTexture(texnameWithUserPath, true, true, true);
 				else if (fs->existFile(B3dTexture->TextureName))
-					tex = SceneManager->getVideoDriver()->getTexture(B3dTexture->TextureName);
+					tex = SceneManager->getVideoDriver()->getTexture(B3dTexture->TextureName, true, true, true);
 				else if (fs->existFile(fs->getFileDir(B3DFile->getFileName()) +"/"+ fs->getFileBasename(B3dTexture->TextureName)))
-					tex = SceneManager->getVideoDriver()->getTexture(fs->getFileDir(B3DFile->getFileName()) +"/"+ fs->getFileBasename(B3dTexture->TextureName));
+					tex = SceneManager->getVideoDriver()->getTexture(fs->getFileDir(B3DFile->getFileName()) +"/"+ fs->getFileBasename(B3dTexture->TextureName), true, true, true);
 				else
-					tex = SceneManager->getVideoDriver()->getTexture(fs->getFileBasename(B3dTexture->TextureName));
+					tex = SceneManager->getVideoDriver()->getTexture(fs->getFileBasename(B3dTexture->TextureName), true, true, true);
 
 				material.Material.setTexture(i, tex);
 			}

@@ -98,7 +98,7 @@ CGUIColorSelectDialog::CGUIColorSelectDialog(const wchar_t* title, IGUIEnvironme
 	CancelButton->grab();
 
 	video::IVideoDriver* driver = Environment->getVideoDriver();
-	ColorRing.Texture = driver->getTexture ( "#colorring" );
+	ColorRing.Texture = driver->getTexture ( "#colorring", false, false, false);
 	if ( 0 == ColorRing.Texture )
 	{
 		buildColorRing(core::dimension2d<u32>(128, 128), 1,
@@ -280,7 +280,7 @@ void CGUIColorSelectDialog::buildColorRing( const core::dimension2d<u32> & dim, 
 	bool generateMipLevels = driver->getTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS);
 	driver->setTextureCreationFlag( video::ETCF_CREATE_MIP_MAPS, false);
 
-	ColorRing.Texture = driver->addTexture ( "#colorring", RawTexture);
+	ColorRing.Texture = driver->addTexture ( "#colorring", RawTexture, false, false, false);
 	RawTexture->drop();
 
 	driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, generateMipLevels);

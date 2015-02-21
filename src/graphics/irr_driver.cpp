@@ -1444,7 +1444,7 @@ video::ITexture *IrrDriver::getTexture(const std::string &filename,
                                        bool complain_if_not_found)
 {
     if (!complain_if_not_found) m_device->getLogger()->setLogLevel(ELL_NONE);
-    video::ITexture *out = m_video_driver->getTexture(filename.c_str());
+    video::ITexture *out = m_video_driver->getTexture(filename.c_str(), is_srgb, is_compressable, premul_by_alpha);
     if (!complain_if_not_found) m_device->getLogger()->setLogLevel(ELL_WARNING);
 
     if (complain_if_not_found && out == nullptr)
@@ -1569,7 +1569,7 @@ video::ITexture* IrrDriver::applyMask(video::ITexture* texture,
 
     std::string base =
         StringUtils::getBasename(texture->getName().getPath().c_str());
-    video::ITexture *t = m_video_driver->addTexture(base.c_str(),img, NULL);
+    video::ITexture *t = m_video_driver->addTexture(base.c_str(),img, false, false, false, NULL);
     img->drop();
     mask->drop();
     return t;

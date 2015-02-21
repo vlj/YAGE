@@ -89,7 +89,7 @@ bool CGUIFont::load(io::IXMLReader* xml)
 				Driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, false);
 
 				// load texture
-				SpriteBank->setTexture(i, Driver->getTexture(fn));
+				SpriteBank->setTexture(i, Driver->getTexture(fn, false, false, false));
 
 				// set previous mip-map+filter state
 				Driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, mipmap);
@@ -291,7 +291,7 @@ bool CGUIFont::loadTexture(video::IImage* image, const io::path& name)
 		Driver->setTextureCreationFlag(video::ETCF_ALLOW_NON_POWER_2, true);
 		Driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, false );
 
-		SpriteBank->addTexture(Driver->addTexture(name, tmpImage));
+		SpriteBank->addTexture(Driver->addTexture(name, tmpImage, false, false, false));
 
 		Driver->setTextureCreationFlag(video::ETCF_ALLOW_NON_POWER_2, flag[0] );
 		Driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, flag[1] );

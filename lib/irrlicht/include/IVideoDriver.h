@@ -20,6 +20,12 @@
 #include "EDriverFeatures.h"
 #include "SExposedVideoData.h"
 
+#if !defined(WIN32) && __cplusplus < 201103L
+#define OVERRIDE
+#else
+#define OVERRIDE override
+#endif
+
 namespace irr
 {
 namespace io
@@ -377,7 +383,7 @@ namespace video
 		\return Pointer to the texture, or 0 if the texture
 		could not be loaded. This pointer should not be dropped. See
 		IReferenceCounted::drop() for more information. */
-		virtual ITexture* getTexture(const io::path& filename) = 0;
+		virtual ITexture* getTexture(const io::path& filename, bool srgb, bool compresseable, bool premulalpha) = 0;
 
 		//! Get access to a named texture.
 		/** Loads the texture from disk if it is not
@@ -389,7 +395,7 @@ namespace video
 		\return Pointer to the texture, or 0 if the texture
 		could not be loaded. This pointer should not be dropped. See
 		IReferenceCounted::drop() for more information. */
-		virtual ITexture* getTexture(io::IReadFile* file) =0;
+        virtual ITexture* getTexture(io::IReadFile* file, bool srgb, bool compresseable, bool premulalpha) = 0;
 
 		//! Returns a texture by index
 		/** \param index: Index of the texture, must be smaller than
@@ -419,8 +425,7 @@ namespace video
 		\return Pointer to the newly created texture. This pointer
 		should not be dropped. See IReferenceCounted::drop() for more
 		information. */
-		virtual ITexture* addTexture(const core::dimension2d<u32>& size,
-			const io::path& name, ECOLOR_FORMAT format = ECF_A8R8G8B8) = 0;
+		virtual ITexture* addTexture(const core::dimension2d<u32>& size, const io::path& name, bool srgb, bool compresseable, bool premulalpha, ECOLOR_FORMAT format = ECF_A8R8G8B8) = 0;
 
 		//! Creates a texture from an IImage.
 		/** \param name A name for the texture. Later calls of
@@ -433,7 +438,7 @@ namespace video
 		\return Pointer to the newly created texture. This pointer
 		should not be dropped. See IReferenceCounted::drop() for more
 		information. */
-		virtual ITexture* addTexture(const io::path& name, IImage* image, void* mipmapData=0) = 0;
+		virtual ITexture* addTexture(const io::path& name, IImage* image, bool srgb, bool compresseable, bool premulalpha, void* mipmapData = 0) = 0;
 
 		//! Adds a new render target texture to the texture cache.
 		/** \param size Size of the texture, in pixels. Width and

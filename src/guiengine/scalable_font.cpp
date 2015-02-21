@@ -732,7 +732,7 @@ void ScalableFont::lazyLoadTexture(int texID)
 
     // load texture
     assert(m_texture_files[texID].m_file_name.size() > 0);
-    SpriteBank->setTexture(texID, Driver->getTexture( m_texture_files[texID].m_file_name ));
+    SpriteBank->setTexture(texID, Driver->getTexture( m_texture_files[texID].m_file_name, false, false, false));
 
     // set previous mip-map+filter state
     //Driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, mipmap);

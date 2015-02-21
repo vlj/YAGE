@@ -1917,7 +1917,7 @@ public:
 		{
 			if (text && *text)
 			{
-				setTexture(Driver->getTexture(text));
+				setTexture(Driver->getTexture(text, false, false, false));
 				OverrideName=text;
 			}
 			else

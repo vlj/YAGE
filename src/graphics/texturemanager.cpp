@@ -191,7 +191,7 @@ video::ITexture* getUnicolorTexture(const video::SColor &c)
         img->grab();
         std::stringstream name;
         name << "color" << c.color;
-        video::ITexture* tex = irr_driver->getVideoDriver()->addTexture(name.str().c_str(), img);
+        video::ITexture* tex = irr_driver->getVideoDriver()->addTexture(name.str().c_str(), img, false, true, false);
         unicolor_cache[c.color] = tex;
         img->drop();
         return tex;

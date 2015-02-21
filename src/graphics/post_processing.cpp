@@ -68,7 +68,7 @@ PostProcessing::PostProcessing(IVideoDriver* video_driver)
         Log::fatal("postprocessing", "Failed to load the areamap");
         return;
     }
-    m_areamap = irr_driver->getVideoDriver()->getTexture(areamap);
+    m_areamap = irr_driver->getVideoDriver()->getTexture(areamap, false, false, false);
     areamap->drop();
 
 }   // PostProcessing

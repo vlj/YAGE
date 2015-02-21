@@ -271,7 +271,7 @@ IMesh* CGeometryCreator::createTerrainMesh(video::IImage* texture,
 
 				sprintf(textureName, "terrain%u_%u", tm, mesh->getMeshBufferCount());
 
-				buffer->Material.setTexture(0, driver->addTexture(textureName, img));
+				buffer->Material.setTexture(0, driver->addTexture(textureName, img, true, true, true));
 
 				if (buffer->Material.getTexture(0))
 				{
