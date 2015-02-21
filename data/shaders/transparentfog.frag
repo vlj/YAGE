@@ -37,12 +37,12 @@ void main()
     float NdotL = clamp(dot(normal, Lightdir), 0., 1.);
 
     diffusecolor.rgb =
-        0.2 * (DiffuseIBL(normal, eyedir, 0., diffusecolor.rgb) + SpecularIBL(normal, eyedir, 0., vec3(0.04))) +
-        sun_col * NdotL * (DiffuseBRDF(normal, eyedir, Lightdir, diffusecolor.rgb, 0.) + SpecularBRDF(normal, eyedir, Lightdir, vec3(.04), 0.));
+        0.2 * (DiffuseIBL(normal, eyedir, 0., diffusecolor.rgb) + SpecularIBL(normal, eyedir, 0., vec3(0.04) * diffusecolor.a)) +
+        sun_col * NdotL * (DiffuseBRDF(normal, eyedir, Lightdir, diffusecolor.rgb, 0.) + SpecularBRDF(normal, eyedir, Lightdir, vec3(.04) * diffusecolor.a, 0.));
 
     float dist = length(xpos.xyz);
     float factor = (1. - exp(- fog_density * dist));
     vec3 fog = fog_color * factor;
 
-    FragColor = vec4((fog + diffusecolor.rgb) * diffusecolor.a, diffusecolor.a);
+    FragColor = vec4(fog * diffusecolor.a + diffusecolor.rgb, diffusecolor.a);
 }

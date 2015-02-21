@@ -126,7 +126,7 @@ void draw2DImage(const video::ITexture* texture, const core::rect<s32>& destRect
     if (useAlphaChannelOfTexture)
     {
         glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     }
     else
     {
@@ -168,7 +168,7 @@ void draw2DImageFromRTT(GLuint texture, size_t texture_w, size_t texture_h,
     if (useAlphaChannelOfTexture)
     {
         glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     }
     float width, height,
         center_pos_x, center_pos_y,
@@ -215,7 +215,7 @@ void draw2DImage(const video::ITexture* texture, const core::rect<s32>& destRect
     if (useAlphaChannelOfTexture)
     {
         glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     }
     else
     {
@@ -307,7 +307,7 @@ void GL32_draw2DRectangle(video::SColor color, const core::rect<s32>& position,
     if (color.getAlpha() < 255)
     {
         glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     }
     else
     {

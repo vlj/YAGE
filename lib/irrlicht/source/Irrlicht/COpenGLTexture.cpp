@@ -395,6 +395,18 @@ void COpenGLTexture::uploadTexture(bool newTexture, void* mipmapData, u32 level)
 
 	// now get image data and upload to GPU
 	void* source = image->lock();
+    if (hasAlpha())
+    {
+        unsigned char *data = static_cast<unsigned char *>(source);
+        for (unsigned i = 0; i < image->getDimension().Width * image->getDimension().Height; i++)
+        {
+            unsigned char alpha = data[4 * i + 3];
+            float a = alpha / 255.;
+            data[4 * i] = (unsigned char)(data[4 * i] * a);
+            data[4 * i + 1] = (unsigned char)(data[4 * i + 1] * a);
+            data[4 * i + 2] = (unsigned char)(data[4 * i + 2] * a);
+        }
+    }
 	if (newTexture)
 		glTexImage2D(GL_TEXTURE_2D, level, InternalFormat, image->getDimension().Width,
 			image->getDimension().Height, 0, PixelFormat, PixelType, source);
