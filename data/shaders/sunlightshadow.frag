@@ -28,14 +28,19 @@ float getShadowFactor(vec3 pos, int index)
     float d = .5 * shadowcoord.z + .5;
 
     float result = 0.;
+    float weights = 0.;
 
     for (float i = -1.; i <= 1.; i += 1.)
     {
         for (float j = -1.; j <= 1.; j += 1.)
-            result += texture(shadowtex, vec4(shadowtexcoord + vec2(i,j) / shadow_res, float(index), d));
+        {
+            float weight = (2 - abs(i)) * (2 - abs(j)) / 4;
+            result += weight * texture(shadowtex, vec4(shadowtexcoord + vec2(i,j) / shadow_res, float(index), d));
+            weights += weight;
+        }
     }
 
-    return result / 9.;
+    return result / weights;
 }
 
 void main() {
