@@ -106,6 +106,7 @@ RTT::RTT(unsigned width, unsigned height)
     RenderTargetTextures[RTT_BLOOM_1024] = generateRTT(shadowsize0, GL_RGBA16F, GL_BGR, GL_FLOAT);
     RenderTargetTextures[RTT_SCALAR_1024] = generateRTT(shadowsize0, GL_R32F, GL_RED, GL_FLOAT);
     RenderTargetTextures[RTT_BLOOM_512] = generateRTT(shadowsize1, GL_RGBA16F, GL_BGR, GL_FLOAT);
+    RenderTargetTextures[RTT_TMP_1024] = generateRTT(shadowsize0, GL_RGBA16F, GL_BGR, GL_FLOAT);
     RenderTargetTextures[RTT_TMP_512] = generateRTT(shadowsize1, GL_RGBA16F, GL_BGR, GL_FLOAT);
 	RenderTargetTextures[RTT_LENS_512] = generateRTT(shadowsize1, GL_RGBA16F, GL_BGR, GL_FLOAT);
 	
@@ -186,6 +187,9 @@ RTT::RTT(unsigned width, unsigned height)
     FrameBuffers.push_back(new FrameBuffer(somevector, 1024, 1024));
     somevector.clear();
     somevector.push_back(RenderTargetTextures[RTT_SCALAR_1024]);
+    FrameBuffers.push_back(new FrameBuffer(somevector, 1024, 1024));
+    somevector.clear();
+    somevector.push_back(RenderTargetTextures[RTT_TMP_1024]);
     FrameBuffers.push_back(new FrameBuffer(somevector, 1024, 1024));
     somevector.clear();
     somevector.push_back(RenderTargetTextures[RTT_BLOOM_512]);
