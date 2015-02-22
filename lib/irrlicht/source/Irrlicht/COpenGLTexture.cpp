@@ -20,12 +20,13 @@ namespace video
 {
     extern bool useCoreContext;
 //! constructor for usual textures
-COpenGLTexture::COpenGLTexture(IImage* origImage, const io::path& name, void* mipmapData, COpenGLDriver* driver)
+    COpenGLTexture::COpenGLTexture(IImage* origImage, const io::path& name, bool srgb, bool compresseable, bool premulalpha, void* mipmapData, COpenGLDriver* driver)
 	: ITexture(name), ColorFormat(ECF_A8R8G8B8), Driver(driver), Image(0), MipImage(0),
 	TextureName(0), InternalFormat(GL_RGBA), PixelFormat(GL_BGRA_EXT),
 	PixelType(GL_UNSIGNED_BYTE), MipLevelStored(0), MipmapLegacyMode(true),
 	IsRenderTarget(false), AutomaticMipmapUpdate(false),
-	ReadOnlyLock(false), KeepImage(true)
+	ReadOnlyLock(false), KeepImage(true),
+    Srgb(srgb), Compressed(compresseable)
 {
 	#ifdef _DEBUG
 	setDebugName("COpenGLTexture");
@@ -407,13 +408,43 @@ void COpenGLTexture::uploadTexture(bool newTexture, void* mipmapData, u32 level)
             data[4 * i + 2] = (unsigned char)(data[4 * i + 2] * a);
         }
     }
-	if (newTexture)
+
+    if (Srgb)
+    {
+        if (Compressed)
+        {
+            InternalFormat = hasAlpha() ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT : GL_COMPRESSED_SRGB_S3TC_DXT1_EXT;
+        }
+        else
+        {
+            InternalFormat = hasAlpha() ? GL_SRGB_ALPHA : GL_SRGB;
+        }
+    }
+    else
+    {
+        if (Compressed)
+        {
+            InternalFormat = hasAlpha() ? GL_COMPRESSED_RGBA_S3TC_DXT5_EXT : GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+        }
+        else
+        {
+            InternalFormat = hasAlpha() ? GL_RGBA : GL_RGB;
+        }
+    }
+    if (newTexture)
+        glTexImage2D(GL_TEXTURE_2D, level, InternalFormat, image->getDimension().Width,
+            image->getDimension().Height, 0, PixelFormat, PixelType, source);
+    else
+        glTexSubImage2D(GL_TEXTURE_2D, level, 0, 0, image->getDimension().Width,
+            image->getDimension().Height, PixelFormat, PixelType, source);
+/*	if (newTexture)
+>>>>>>> da89b35... Precompress textures
 		glTexImage2D(GL_TEXTURE_2D, level, InternalFormat, image->getDimension().Width,
 			image->getDimension().Height, 0, PixelFormat, PixelType, source);
 	else
 		glTexSubImage2D(GL_TEXTURE_2D, level, 0, 0, image->getDimension().Width,
 			image->getDimension().Height, PixelFormat, PixelType, source);
-	image->unlock();
+	image->unlock();*/
 
 	if (!MipmapLegacyMode && AutomaticMipmapUpdate)
 	{

@@ -51,7 +51,7 @@ class COpenGLTexture : public ITexture
 public:
 
 	//! constructor
-	COpenGLTexture(IImage* surface, const io::path& name, void* mipmapData=0, COpenGLDriver* driver=0);
+	COpenGLTexture(IImage* surface, const io::path& name, bool srgb, bool compresseable, bool premulalpha, void* mipmapData=0, COpenGLDriver* driver=0);
 
 	//! destructor
 	virtual ~COpenGLTexture();
@@ -143,6 +143,9 @@ protected:
 	bool AutomaticMipmapUpdate;
 	bool ReadOnlyLock;
 	bool KeepImage;
+    bool Srgb;
+    bool Compressed;
+    bool AlphaPremul;
 };
 
 //! OpenGL FBO texture.
