@@ -411,6 +411,8 @@ void COpenGLTexture::uploadTexture(bool newTexture, void* mipmapData, u32 level)
 
     if (Srgb)
     {
+        if (!image->isColorspaceSRGB())
+            printf("%s is not in srgb colorspace but is used as srgb\n", getName().getPath().c_str());
         if (Compressed)
         {
             InternalFormat = hasAlpha() ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT : GL_COMPRESSED_SRGB_S3TC_DXT1_EXT;
@@ -422,6 +424,8 @@ void COpenGLTexture::uploadTexture(bool newTexture, void* mipmapData, u32 level)
     }
     else
     {
+        if (image->isColorspaceSRGB())
+            printf("%s is in srgb colorspace but is not used as srgb\n", getName().getPath().c_str());
         if (Compressed)
         {
             InternalFormat = hasAlpha() ? GL_COMPRESSED_RGBA_S3TC_DXT5_EXT : GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
