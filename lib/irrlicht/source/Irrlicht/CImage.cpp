@@ -14,7 +14,7 @@ namespace video
 
 //! Constructor of empty image
 CImage::CImage(ECOLOR_FORMAT format, const core::dimension2d<u32>& size)
-:Data(0), Size(size), Format(format), DeleteMemory(true)
+:Data(0), Size(size), Format(format), DeleteMemory(true), sRGBColorSpace(false)
 {
 	initData();
 }
@@ -23,7 +23,7 @@ CImage::CImage(ECOLOR_FORMAT format, const core::dimension2d<u32>& size)
 //! Constructor from raw data
 CImage::CImage(ECOLOR_FORMAT format, const core::dimension2d<u32>& size, void* data,
 			bool ownForeignMemory, bool deleteForeignMemory)
-: Data(0), Size(size), Format(format), DeleteMemory(deleteForeignMemory)
+: Data(0), Size(size), Format(format), DeleteMemory(deleteForeignMemory), sRGBColorSpace(false)
 {
 	if (ownForeignMemory)
 	{
@@ -457,6 +457,16 @@ inline SColor CImage::getPixelBox( s32 x, s32 y, s32 fx, s32 fy, s32 bias ) cons
 	return c;
 }
 
+
+bool CImage::isColorspaceSRGB() const
+{
+	return sRGBColorSpace;
+}
+
+void CImage::setColorspaceSRGB(bool v)
+{
+	sRGBColorSpace = v;
+}
 
 } // end namespace video
 } // end namespace irr

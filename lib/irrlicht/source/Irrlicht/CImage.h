@@ -8,6 +8,12 @@
 #include <Core/IImage.h>
 #include <Maths/rect.h>
 
+#if !defined(WIN32) && __cplusplus < 201103L
+#define OVERRIDE
+#else
+#define OVERRIDE override
+#endif
+
 namespace irr
 {
 namespace video
@@ -103,6 +109,12 @@ public:
 	//! fills the surface with given color
 	virtual void fill(const SColor &color);
 
+	//! Returns true if texture colorspace is sRGB
+    virtual bool isColorspaceSRGB() const OVERRIDE;
+
+	//! Set colorspace to sRGB
+    virtual void setColorspaceSRGB(bool) OVERRIDE;
+
 private:
 
 	//! assumes format and size has been set and creates the rest
@@ -115,6 +127,7 @@ private:
 	u32 BytesPerPixel;
 	u32 Pitch;
 	ECOLOR_FORMAT Format;
+	bool sRGBColorSpace;
 
 	bool DeleteMemory;
 };

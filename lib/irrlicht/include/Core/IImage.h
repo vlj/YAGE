@@ -154,6 +154,12 @@ public:
 		}
 	}
 
+	//! Returns true if texture colorspace is sRGB
+	virtual bool isColorspaceSRGB() const = 0;
+
+	//! Set colorspace to sRGB
+	virtual void setColorspaceSRGB(bool) = 0;
+
 };
 
 } // end namespace video

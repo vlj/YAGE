@@ -92,6 +92,7 @@ IImage* CImageLoaderPng::loadImage(io::IReadFile* file) const
 	if (!file)
 		return 0;
 
+	bool sRGB = false;
 	video::IImage* image = 0;
 	//Used to point to image rows
 	u8** RowPointers = 0;
@@ -188,7 +189,10 @@ IImage* CImageLoaderPng::loadImage(io::IReadFile* file) const
 	const double screen_gamma = 2.2;
 
 	if (png_get_sRGB(png_ptr, info_ptr, &intent))
+	{
+		sRGB = true;
 		png_set_gamma(png_ptr, screen_gamma, 0.45455);
+	}
 	else
 	{
 		double image_gamma;
@@ -269,6 +273,7 @@ IImage* CImageLoaderPng::loadImage(io::IReadFile* file) const
 	delete [] RowPointers;
 	image->unlock();
 	png_destroy_read_struct(&png_ptr,&info_ptr, 0); // Clean up memory
+	image->setColorspaceSRGB(sRGB);
 
 	return image;
 #else
