@@ -315,13 +315,7 @@ IMeshSceneNode* CSceneManager::addCubeSceneNode(f32 size, ISceneNode* parent,
 		s32 id, const core::vector3df& position,
 		const core::vector3df& rotation, const core::vector3df& scale)
 {
-	if (!parent)
-		parent = this;
-
-	IMeshSceneNode* node = new CCubeSceneNode(size, parent, this, id, position, rotation, scale);
-	node->drop();
-
-	return node;
+    return addMeshSceneNode(SceneManager->getGeometryCreator()->createCubeMesh(core::vector3df(size)), parent, id, position, rotation, scale);
 }
 
 
